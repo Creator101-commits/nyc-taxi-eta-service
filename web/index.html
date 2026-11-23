@@ -39,6 +39,14 @@
           <section class="card">
             <div class="card-title">Deployment drift</div>
             <div id="drift-chart"></div>
+            <ul class="drift-legend">
+              <li><span class="sw" style="background:#ffd166"></span>static MAE</li>
+              <li><span class="sw" style="background:#4cc2ff"></span>monthly MAE</li>
+              <li><span class="sw" style="background:#ff9e64"></span>drift MAE</li>
+              <li><span class="sw cut"></span>degraded cut</li>
+              <li><span class="sw alarm"></span>alarm month</li>
+              <li><span class="sw retrain"></span>drift retrain</li>
+            </ul>
             <p class="note" id="drift-caption"></p>
           </section>
           <section class="card">

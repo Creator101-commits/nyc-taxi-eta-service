@@ -81,7 +81,7 @@ describe("renderDriftChartSvg", () => {
     const svg = renderDriftChartSvg(buildDriftChart(drift));
     expect(svg).toContain("<svg");
     expect(svg).toContain("<polyline");
-    expect(svg).toContain("degraded cut");
+    expect(svg).toContain('stroke-dasharray="4 3"'); // degraded cut line
     expect(svg).toContain("COVID");
     expect(svg).toContain("#ff6b6b"); // degraded marker + cut line
     expect(svg).toContain("#ffd166"); // static MAE + alarm diamonds

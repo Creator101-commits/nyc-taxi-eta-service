@@ -142,8 +142,7 @@ export function renderDriftChartSvg(model: ChartModel): string {
 
   // Degraded cut: dashed horizontal line at 1.1 x validation MAE.
   const cutLine = Number.isFinite(model.degradedCut)
-    ? `<line x1="${PAD_L}" y1="${y(model.degradedCut).toFixed(1)}" x2="${w - PAD_R}" y2="${y(model.degradedCut).toFixed(1)}" stroke="#ff6b6b" stroke-width="1" stroke-dasharray="4 3"/>` +
-      `<text x="${w - PAD_R}" y="${(y(model.degradedCut) - 3).toFixed(1)}" text-anchor="end" font-size="7" fill="#ff6b6b">degraded cut</text>`
+    ? `<line x1="${PAD_L}" y1="${y(model.degradedCut).toFixed(1)}" x2="${w - PAD_R}" y2="${y(model.degradedCut).toFixed(1)}" stroke="#ff6b6b" stroke-width="1" stroke-dasharray="4 3"/>`
     : "";
 
   // COVID annotation: vertical dashed line at 2020-03.
@@ -193,14 +192,6 @@ export function renderDriftChartSvg(model: ChartModel): string {
     )
     .join("");
 
-  const legend = paths
-    .map(
-      (p, i) =>
-        `<text x="${PAD_L + i * 62}" y="${h - 8}" font-size="8" fill="${p.color}">${p.name}</text>`,
-    )
-    .join("") +
-    `<text x="${PAD_L + paths.length * 62}" y="${h - 8}" font-size="8" fill="#ff9e64">| retrain</text>`;
-
   return (
     `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">` +
     gridLines +
@@ -210,7 +201,6 @@ export function renderDriftChartSvg(model: ChartModel): string {
     lines +
     retrainTicks +
     monthTicks +
-    legend +
     `</svg>`
   );
 }
