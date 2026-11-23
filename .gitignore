@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+
+# uv
+uv.lock.bak
+
+# Node / web
+node_modules/
+web/dist/
+
+# Kaggle / run artifacts
+artifacts/
+kaggle_smoke_out/
+*.log
+
+# Local secrets / machine-specific
+local.properties
+.env
+
+# Model artifacts produced by Kaggle runs (fixtures stay in the package)
+models/
+!src/nyc_eta/service/fixtures/
+
+# OS
+.DS_Store

@@ -1,0 +1,17 @@
+{
+  "id": "sreeharshak101/nyc-taxi-eta-smoke",
+  "title": "NYC Taxi ETA Smoke",
+  "code_file": "run_kaggle.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": "true",
+  "enable_gpu": "false",
+  "enable_tpu": "false",
+  "enable_internet": "true",
+  "dataset_sources": [
+    "sreeharshak101/nyc-taxi-eta-src",
+    "sreeharshak101/nyc-taxi-eta-osm-graph"
+  ],
+  "competition_sources": [],
+  "kernel_sources": []
+}
