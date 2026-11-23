@@ -140,7 +140,6 @@ def distance_dict(zone_ids: list[int], matrix: np.ndarray) -> dict[tuple[int, in
 def route_geometries(
     graph: Any,
     nodes: dict[int, int],
-    infos: dict[int, ZoneInfo],
     pairs: set[tuple[int, int]],
     max_points: int = 120,
 ) -> dict[str, list[list[float]]]:

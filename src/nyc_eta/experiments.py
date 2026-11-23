@@ -450,7 +450,7 @@ def run_experiment(
     if not graph_nodes:
         graph_nodes = zone_nodes(graph, zone_infos)
     _export_web_data(
-        out_dir, zone_infos, zones_geojson, feats, deploy_signals,
+        out_dir, zones_geojson, feats, deploy_signals,
         monthly_records, deploy_months, graph, graph_nodes,
     )
     log.mark("web_export", time.time() - t0)
@@ -638,7 +638,6 @@ def _train_served_model(
 
 def _export_web_data(
     out_dir: Path,
-    zone_infos: dict[int, ZoneInfo],
     zones_geojson: dict[str, Any],
     feats: dict[str, pd.DataFrame],
     deploy_signals: dict[str, drift.DriftSignals],
@@ -701,7 +700,7 @@ def _export_web_data(
     # Route geometries for the demo pairs.
     routes = {}
     if graph is not None and nodes:
-        routes = route_geometries(graph, nodes, zone_infos, pairs)
+        routes = route_geometries(graph, nodes, pairs)
     (web / "routes.json").write_text(json.dumps(routes))
 
 
