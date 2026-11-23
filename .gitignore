@@ -31,3 +31,7 @@ models/
 
 # OS
 .DS_Store
+
+# Local run dirs
+work/
+model_bundle/
