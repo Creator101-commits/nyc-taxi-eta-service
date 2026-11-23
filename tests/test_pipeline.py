@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
 from conftest import make_trips as _trips
 
-from nyc_eta import config, data, metrics
+from nyc_eta import config, data, drift, experiments, metrics, models, policies
 from nyc_eta.features import (
     BOROUGH_CATEGORIES,
     ZONE_ID_CATEGORIES,
@@ -134,3 +136,123 @@ class TestMetrics:
         slices = metrics.borough_slices(feature_frame, pred)
         assert set(slices) == set(feature_frame["pu_borough"].unique())
         assert all("mae" in v and "n" in v for v in slices.values())
+
+
+def _day_trips(day: str, n: int, seed: int, pu: int, do: int) -> pd.DataFrame:
+    rng = np.random.default_rng(seed)
+    base = pd.Timestamp(day)
+    pickup = [
+        base + pd.Timedelta(minutes=int(m))
+        for m in rng.integers(0, 600, n)
+    ]
+    minutes = rng.uniform(5, 40, n)
+    return pd.DataFrame({
+        "tpep_pickup_datetime": pickup,
+        "tpep_dropoff_datetime": [
+            p + pd.Timedelta(minutes=float(m))
+            for p, m in zip(pickup, minutes, strict=False)
+        ],
+        "PULocationID": np.full(n, pu),
+        "DOLocationID": np.full(n, do),
+    })
+
+
+class TestWebExport:
+    def _frames(self, builder):
+        pre = builder.build_frame(_day_trips("2019-10-01", 100, 1, 1, 2))
+        covid = builder.build_frame(_day_trips("2020-04-07", 200, 2, 2, 1))
+        return {"2019-10": pre, "2020-04": covid}
+
+    def _call(self, tmp_path, builder, zone_infos):
+        feats = self._frames(builder)
+        static = models.ZonePairBaseline().fit(
+            pd.concat(list(feats.values()), ignore_index=True)
+        )
+        pol = {
+            name: policies.PolicyResult(
+                name=name,
+                monthly_mae={"2019-10": 3.5},
+                retrain_months=["2019-10"] if name != "static" else [],
+            )
+            for name in ("static", "monthly", "drift")
+        }
+        calls: list[set[tuple[int, int]]] = []
+
+        def stub_routes(pairs):
+            calls.append(set(pairs))
+            return {
+                f"{a}>{b}": [[-74.0, 40.7], [-73.9, 40.8], [-73.8, 40.9]]
+                for a, b in pairs
+            }
+
+        zones_geojson = {
+            "type": "FeatureCollection",
+            "features": [{
+                "type": "Feature",
+                "properties": {},
+                "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                        [-74.1, 40.6], [-73.9, 40.6],
+                        [-73.9, 40.8], [-74.1, 40.8], [-74.1, 40.6],
+                    ]],
+                },
+            }],
+        }
+        meta = experiments._export_web_data(
+            tmp_path, zones_geojson, feats,
+            {"2019-10": drift.DriftSignals(0.1, 0.2, 1.0)},
+            {"2019-10": {"mae": 3.5, "degraded": False, "coverage": 0.8}},
+            ["2019-10"], None, zone_infos,
+            static_model=static, pol_results=pol,
+            thresholds={
+                "drift_share": 0.5,
+                "pred_wasserstein": 0.5,
+                "volume_ratio": 2.0,
+            },
+            val_mae=4.0, clean_counts={
+                "2019-10": {"dropoff_after_pickup": 1_000_000},
+                "2020-04": {"dropoff_after_pickup": 250_000},
+            },
+            sample_n=1000, route_fn=stub_routes,
+        )
+        return tmp_path / "web", meta, calls
+
+    def test_proportional_counts_and_pair_filter(
+        self, tmp_path, builder, zone_infos
+    ):
+        web, meta, calls = self._call(tmp_path, builder, zone_infos)
+        trips = json.loads((web / "trips.json").read_text())
+        days = trips["days"]
+        # est_real = n_sampled_day * cleaned_n_month / sample_n_month
+        assert days["pre"]["est_real_trips"] == 100_000
+        assert days["pre"]["n_exported"] == 100
+        assert days["pre"]["real_trips_per_taxi"] == pytest.approx(1000.0)
+        assert days["covid"]["est_real_trips"] == 50_000
+        # covid exports round(100 * 50000/100000) = 50 trips
+        assert days["covid"]["n_exported"] == 50
+        assert days["covid"]["real_trips_per_taxi"] == pytest.approx(1000.0)
+        assert len(trips["trips"]["covid"]) == 50
+        row = trips["trips"]["pre"][0]
+        assert set(row) == {"pu", "do", "minute", "minutes", "pred_minutes"}
+        assert row["minutes"] > 0 and row["pred_minutes"] > 0
+
+        # only exported pairs reach the router and routes.json
+        assert calls == [{(1, 2), (2, 1)}]
+        routes = json.loads((web / "routes.json").read_text())
+        assert set(routes) == {"1>2", "2>1"}
+        assert all(len(c) >= 2 for c in routes.values())
+
+        drift_json = json.loads((web / "drift.json").read_text())
+        assert drift_json["val_mae"] == 4.0
+        assert drift_json["degraded_cut"] == pytest.approx(4.4)
+        assert drift_json["alarms"]["2019-10"]["any"] is False
+        assert set(drift_json["policies"]) == {"static", "monthly", "drift"}
+
+        assert (web / "zones.geojson").exists()
+        assert meta["caps"]["pre_day_trips"] == config.WEB_TRIPS_PRE_CAP
+        assert meta["seeds"]["subset"] == config.WEB_SUBSET_SEED
+        assert set(meta["files"]) == {
+            "zones.geojson", "drift.json", "trips.json", "routes.json",
+        }
+        assert all(v > 0 for v in meta["files"].values())

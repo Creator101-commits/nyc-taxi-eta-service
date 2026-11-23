@@ -516,10 +516,12 @@ def run_experiment(
 
     # --- web data export (always, incl. smoke) -----------------------------
     t0 = time.time()
-    _LAST_MODEL.append(best)
-    _export_web_data(
+    web_export = _export_web_data(
         out_dir, zones_geojson, feats, deploy_signals,
         monthly_records, deploy_months, graphml_path, zone_infos,
+        static_model=best, pol_results=pol_results,
+        thresholds=thresholds, val_mae=val_mae,
+        clean_counts=clean_counts, sample_n=sample_n,
     )
     log.mark("web_export", t0)
 
@@ -555,6 +557,7 @@ def run_experiment(
         "shap": shap_report,
         "served_model": served,
         "sample_per_month": sample_n,
+        "web_export": web_export,
     }
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
     return manifest
@@ -715,6 +718,67 @@ def _train_served_model(
     }
 
 
+def _round_coords(coords: Any, decimals: int) -> list[list[float]]:
+    return [
+        [round(float(x), decimals), round(float(y), decimals)]
+        for x, y in coords
+    ]
+
+
+def _simplify_route_coords(
+    coords: list[list[float]],
+) -> list[list[float]]:
+    """shapely simplify for one route polyline; keeps endpoints."""
+    from shapely.geometry import LineString  # noqa: PLC0415
+
+    line = LineString(coords)
+    simp = line.simplify(
+        config.WEB_ROUTE_SIMPLIFY_TOL, preserve_topology=True
+    )
+    if simp.is_empty:
+        return _round_coords(coords, config.WEB_COORD_DECIMALS)
+    return _round_coords(simp.coords, config.WEB_COORD_DECIMALS)
+
+
+def _simplify_zones_geojson(zones_geojson: dict[str, Any]) -> None:
+    """Simplify zone polygons in place; rounds coordinates."""
+    from shapely.geometry import Polygon  # noqa: PLC0415
+
+    d = config.WEB_COORD_DECIMALS
+    for feature in zones_geojson.get("features", []):
+        geom = feature.get("geometry") or {}
+        rings = geom.get("coordinates") or []
+        if geom.get("type") != "Polygon" or not rings:
+            continue
+        poly = Polygon(shell=rings[0], holes=rings[1:])
+        simp = poly.simplify(
+            config.WEB_ZONE_SIMPLIFY_TOL, preserve_topology=True
+        )
+        if simp.is_empty or simp.geom_type != "Polygon":
+            continue
+        coords = [list(simp.exterior.coords)] + [
+            list(r.coords) for r in simp.interiors
+        ]
+        geom["coordinates"] = [
+            _round_coords(ring, d) for ring in coords
+        ]
+
+
+def _demo_day_frame(
+    feats: dict[str, pd.DataFrame], day: str
+) -> tuple[str, pd.DataFrame] | None:
+    """Feature rows for one demo day, or None when the month is absent."""
+    day_ts = pd.Timestamp(day)
+    month = f"{day_ts.year}-{day_ts.month:02d}"
+    if month not in feats:
+        return None
+    fdf = feats[month]
+    day_df = fdf.loc[fdf["pickup"].dt.date == day_ts.date()]
+    if len(day_df) == 0:
+        return None
+    return month, day_df
+
+
 def _export_web_data(
     out_dir: Path,
     zones_geojson: dict[str, Any],
@@ -724,13 +788,28 @@ def _export_web_data(
     deploy_months: list[str],
     graphml_path: Path | None,
     zone_infos: dict[int, ZoneInfo],
-) -> None:
-    """Write the static data files the website loads."""
+    static_model: models.TrainedModel | models.ZonePairBaseline,
+    pol_results: dict[str, policies.PolicyResult],
+    thresholds: dict[str, float],
+    val_mae: float,
+    clean_counts: dict[str, dict[str, int]],
+    sample_n: int,
+    route_fn: Any = None,
+) -> dict[str, Any]:
+    """Write the static data files the website loads.
+
+    ``route_fn(pairs) -> {"pu>do": [[lon, lat], ...]}`` is injectable so
+    tests can stub routing; the kernel path routes on the OSM graph.
+    Returns the web_export provenance block for the manifest.
+    """
     web = out_dir / "web"
     web.mkdir(exist_ok=True)
-    (web / "zones.geojson").write_text(json.dumps(zones_geojson))
 
-    # Drift chart data.
+    zones_simplified = json.loads(json.dumps(zones_geojson))
+    _simplify_zones_geojson(zones_simplified)
+    (web / "zones.geojson").write_text(json.dumps(zones_simplified))
+
+    # Drift chart data: static MAE, signals, alarms, policy series.
     drift_json: dict[str, Any] = {
         "months": list(deploy_months),
         "mae": {m: monthly_records[m]["mae"] for m in deploy_months},
@@ -744,48 +823,136 @@ def _export_web_data(
         "degraded": {
             m: monthly_records[m]["degraded"] for m in deploy_months
         },
+        "thresholds": {k: float(v) for k, v in thresholds.items()},
+        "alarms": {
+            m: {
+                **{
+                    k: bool(v)
+                    for k, v in drift.signal_alarms(
+                        deploy_signals[m], thresholds
+                    ).items()
+                },
+                "any": drift.any_alarm(
+                    drift.signal_alarms(deploy_signals[m], thresholds)
+                ),
+            }
+            for m in deploy_months
+        },
+        "static_coverage": {
+            m: monthly_records[m]["coverage"] for m in deploy_months
+        },
+        "val_mae": float(val_mae),
+        "degraded_cut": float(config.DEGRADED_MAE_RATIO * val_mae),
+        "policies": {
+            name: {
+                "monthly_mae": res.monthly_mae,
+                "retrain_months": res.retrain_months,
+            }
+            for name, res in pol_results.items()
+        },
     }
     (web / "drift.json").write_text(json.dumps(drift_json))
 
-    # Demo-day trips + routes.
-    pairs: set[tuple[int, int]] = set()
+    # Demo-day trips: seed-0 subsets scaled to estimated real volume.
+    rng = np.random.default_rng(config.WEB_SUBSET_SEED)
+    days_meta: dict[str, Any] = {}
     trips_out: dict[str, list[dict[str, Any]]] = {}
+    exported_pairs: set[tuple[int, int]] = set()
+    est_real: dict[str, int] = {}
+    n_exported: dict[str, int] = {}
+
+    day_frames: dict[str, tuple[str, pd.DataFrame]] = {}
     for tag, day in config.DEMO_DAYS.items():
-        # find the deploy/feature month containing the demo day
-        day_ts = pd.Timestamp(day)
-        month = f"{day_ts.year}-{day_ts.month:02d}"
-        if month not in feats:
+        found = _demo_day_frame(feats, day)
+        if found is not None:
+            day_frames[tag] = found
+
+    # Pass 1: sample sizes and estimated real trips per demo day.
+    for tag, (month, day_df) in day_frames.items():
+        n_sampled = len(day_df)
+        cleaned_n = int(clean_counts[month]["dropoff_after_pickup"])
+        est = int(round(n_sampled * cleaned_n / sample_n))
+        est_real[tag] = est
+        days_meta[tag] = {
+            "date": config.DEMO_DAYS[tag],
+            "n_sampled": int(n_sampled),
+            "est_real_trips": est,
+            "n_exported": 0,
+            "real_trips_per_taxi": None,
+        }
+
+    # Pass 2: export subsets. Pre day capped; covid day scaled by the
+    # estimated real-trip ratio so taxi density matches real volume.
+    for tag, (_month, day_df) in day_frames.items():
+        n_sampled = len(day_df)
+        if tag == "pre":
+            k = min(config.WEB_TRIPS_PRE_CAP, n_sampled)
+        else:
+            pre_est = est_real.get("pre", 0)
+            pre_n = n_exported.get("pre", 0)
+            if pre_est <= 0 or pre_n <= 0:
+                continue
+            k = int(round(
+                pre_n * est_real[tag] / pre_est
+            ))
+            k = min(k, n_sampled)
+        if k <= 0:
             continue
-        fdf = feats[month]
-        mask = fdf["pickup"].dt.date == day_ts.date()
-        day_df = fdf.loc[mask]
-        if len(day_df) == 0:
-            continue
-        pred = models.predict_minutes(
-            _LAST_MODEL[0], day_df
-        ) if _LAST_MODEL else np.full(len(day_df), np.nan)
+        idx = np.sort(rng.choice(n_sampled, size=k, replace=False))
+        subset = day_df.iloc[idx].sort_values("pickup")
+        pred = models.predict_minutes(static_model, subset)
         rows = []
-        for (_, r), p in zip(day_df.iterrows(), pred, strict=False):
+        for (_, r), p in zip(subset.iterrows(), pred, strict=False):
             pu, do = int(r["pu_zone"]), int(r["do_zone"])
-            pairs.add((pu, do))
+            exported_pairs.add((pu, do))
             rows.append({
-                "pu": pu, "do": do,
+                "pu": pu,
+                "do": do,
                 "minute": int(r["pickup"].hour * 60 + r["pickup"].minute),
+                "minutes": round(float(r["minutes"]), 1),
                 "pred_minutes": round(float(p), 1),
             })
-        trips_out[tag] = rows[:500]
-    (web / "trips.json").write_text(json.dumps(trips_out))
+        trips_out[tag] = rows
+        n_exported[tag] = len(rows)
+        days_meta[tag]["n_exported"] = len(rows)
+        days_meta[tag]["real_trips_per_taxi"] = round(
+            est_real[tag] / len(rows), 1
+        ) if rows else None
 
-    # Route geometries for the demo pairs; the GraphML is parsed only
-    # when there is at least one pair to route (smoke has none).
+    trips_json = {"days": days_meta, "trips": trips_out}
+    (web / "trips.json").write_text(json.dumps(trips_json))
+
+    # Routes only for pairs used by exported trips; GraphML loads lazily.
     routes: dict[str, Any] = {}
-    if pairs and graphml_path is not None and graphml_path.exists():
-        graph = load_graph(graphml_path)
-        nodes = zone_nodes(graph, zone_infos)
-        routes = route_geometries(graph, nodes, pairs)
+    if exported_pairs:
+        if route_fn is not None:
+            raw_routes = route_fn(exported_pairs)
+        elif graphml_path is not None and graphml_path.exists():
+            graph = load_graph(graphml_path)
+            nodes = zone_nodes(graph, zone_infos)
+            raw_routes = route_geometries(graph, nodes, exported_pairs)
+        else:
+            raw_routes = {}
+        routes = {
+            key: _simplify_route_coords(coords)
+            for key, coords in raw_routes.items()
+            if tuple(int(v) for v in key.split(">")) in exported_pairs
+        }
     (web / "routes.json").write_text(json.dumps(routes))
 
-
-# Module-level stash so _export_web_data can reuse the selected model for
-# demo-day predictions without threading it through every call.
-_LAST_MODEL: list[models.TrainedModel] = []
+    file_sizes = {
+        name: (web / name).stat().st_size
+        for name in ("zones.geojson", "drift.json", "trips.json",
+                     "routes.json")
+    }
+    return {
+        "caps": {"pre_day_trips": config.WEB_TRIPS_PRE_CAP},
+        "seeds": {"subset": config.WEB_SUBSET_SEED},
+        "tolerances": {
+            "route_simplify": config.WEB_ROUTE_SIMPLIFY_TOL,
+            "zone_simplify": config.WEB_ZONE_SIMPLIFY_TOL,
+        },
+        "coordinate_decimals": config.WEB_COORD_DECIMALS,
+        "demo_days": config.DEMO_DAYS,
+        "files": file_sizes,
+    }

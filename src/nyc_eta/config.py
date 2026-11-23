@@ -50,7 +50,9 @@ SMOKE_SAMPLE_PER_MONTH = 20_000
 SMOKE_MONTHS = {
     "train": ["2019-01"],
     "validation": ["2019-05"],
-    "deploy": ["2019-07"],
+    # 2019-10 contains the pre-COVID demo day so smoke exercises the
+    # trips/routes export.
+    "deploy": ["2019-10"],
 }
 
 # --- Features ---------------------------------------------------------------
@@ -119,3 +121,11 @@ DRIFT_SIGNALS = ["drift_share", "pred_wasserstein", "volume_ratio"]
 OSM_PLACE = "New York, New York"
 OSM_NETWORK_TYPE = "drive"
 OSM_GRAPH_DATASET_ID = "sreeharshak101/nyc-taxi-eta-osm-graph"
+
+# --- Website export ---------------------------------------------------------
+
+WEB_TRIPS_PRE_CAP = 4000  # max exported trips for the pre-COVID demo day
+WEB_SUBSET_SEED = 0  # rng seed for demo-day subsets and covid scaling
+WEB_ROUTE_SIMPLIFY_TOL = 5e-5  # degrees, shapely LineString.simplify
+WEB_ZONE_SIMPLIFY_TOL = 1e-4  # degrees, shapely Polygon.simplify
+WEB_COORD_DECIMALS = 5
