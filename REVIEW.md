@@ -27,7 +27,11 @@
   LightGBM val MAE 4.09) and uses the selected LightGBM as the static
   policy model, so static/drift policy MAE equals the deployment MAE
   (3.83) with zero retrains in the single smoke deploy month.
-- Full run: not launched; awaits smoke report review.
+- Full runs: v1 at `1cb0f4d` completed (`artifacts/kaggle/20261122-224108`);
+  v1.1 at `e18c996` completed and lead-verified
+  (`artifacts/kaggle/20261123-154018`, `ordering_ok: true`,
+  `total_s: 4100`, 17 MB output, no parquet). v1.1 reproduced every
+  frozen v1 quantity exactly; additions are analysis/export/hygiene only.
 
 ## Smoke v5 numbers (pipeline check only, 3 months x 20k rows)
 
@@ -58,6 +62,5 @@
 - Smoke scores come from tiny samples and toy-scale runs; they verify
   the pipeline and gates, not model quality, and do not drive any
   configuration choice.
-- `web/public/data/` holds synthetic fixtures until the full kernel
-  overwrites them with real output; the smoke export has empty
-  trips/routes because the demo days fall outside its deploy month.
+- `web/public/data/` now holds the unedited v1.1 export; tests use
+  dedicated inline fixtures and never read it.

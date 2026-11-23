@@ -4,7 +4,7 @@
 
 - [x] Package scaffold: `src/nyc_eta/` modules (data, features, routing,
       models, conformal, drift, policies, tracking, service, experiments)
-- [x] Local fixture tests (39 tests), ruff, mypy
+- [x] Local fixture tests (46 tests), ruff, mypy
 - [x] Kaggle kernels: full (`kaggle/`), smoke (`kaggle_smoke/`), one-off
       OSM graph build (`kaggle_graph/`), `scripts/kaggle_run.sh`,
       `scripts/build_graph_dataset.sh`
@@ -13,8 +13,9 @@
 - [x] Smoke kernel runs: v4 verified at 38ace96; v5 at final HEAD
 - [x] Web app (Vite + TypeScript + MapLibre + deck.gl), 16 vitest tests
 - [x] CI workflow (python matrix, web, docker) + Dockerfile
-- [ ] Full kernel run (only after smoke report is approved)
-- [ ] results/ curation, image.png, README findings
+- [x] Full kernel run: v1 at 1cb0f4d and v1.1 at e18c996
+      (v1.1 verified, ordering_ok, output 17 MB)
+- [x] results/ curation, image.png, README findings
 
 ## Protocol (frozen, `nyc-taxi-eta-v1`)
 

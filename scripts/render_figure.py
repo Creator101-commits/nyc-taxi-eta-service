@@ -70,7 +70,7 @@ ax = axes[0, 1]
 order = ["monthly-static", "drift-static", "drift-monthly"]
 labels = ["monthly - static", "drift - static", "drift - monthly"]
 ys = np.arange(len(order))[::-1]
-for y, key, lab in zip(ys, order, labels, strict=True):
+for y, key in zip(ys, order, strict=True):
     d = DATA["bootstrap_diffs"][key]
     ax.errorbar(d["point"], y, xerr=[[d["point"] - d["ci_low"]], [d["ci_high"] - d["point"]]],
                 fmt="o", color=COL_MONTHLY, ecolor=COL_MONTHLY, capsize=4, ms=6)
