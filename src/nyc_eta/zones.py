@@ -147,8 +147,14 @@ def build_zone_table(
         shape = shapes.get(loc_id, {"rings": []})
         rings = shape["rings"]
         lat, lon = _polygon_centroid(rings) if rings else (float("nan"),) * 2
-        borough = str(row["borough"])
-        zone_name = str(row["zone"])
+        borough = (
+            str(row["borough"])
+            if pd.notna(row["borough"])
+            else "Unknown"
+        )
+        zone_name = (
+            str(row["zone"]) if pd.notna(row["zone"]) else "Unknown"
+        )
         infos[loc_id] = ZoneInfo(loc_id, zone_name, borough, lat, lon)
         rows.append(
             {

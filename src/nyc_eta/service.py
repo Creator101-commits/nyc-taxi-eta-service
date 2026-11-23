@@ -22,7 +22,11 @@ from pydantic import BaseModel, Field
 
 from nyc_eta import config
 from nyc_eta.conformal import ConformalInterval, predict_interval
-from nyc_eta.features import FeatureBuilder, assert_no_leakage
+from nyc_eta.features import (
+    FeatureBuilder,
+    assert_no_leakage,
+    categorical_columns,
+)
 from nyc_eta.models import expm1_pred, load_booster
 from nyc_eta.routing import distance_dict, load_distance_table
 from nyc_eta.zones import build_zone_table
@@ -105,8 +109,7 @@ def create_app(bundle_dir: Path | None = None,
         # Explicitly drop anything that could be a post-trip field.
         assert_no_leakage(list(feats.keys()))
         row = pd.DataFrame([feats])
-        for col in config.CATEGORICAL_FEATURES:
-            row[col] = row[col].astype("category")
+        categorical_columns(row)
         log_pred = served.booster.predict(
             row[config.FEATURE_COLUMNS],
             num_iteration=served.best_iteration,

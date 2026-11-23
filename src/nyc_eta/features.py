@@ -151,9 +151,27 @@ class FeatureBuilder:
         df["pickup_dow"] = df["pickup"].dt.day_of_week.astype(int)
         df["is_holiday"] = df["pickup"].dt.normalize().isin(self._holidays).astype(int)
 
-        for col in config.CATEGORICAL_FEATURES:
-            df[col] = df[col].astype("category")
+        categorical_columns(df)
         return df
+
+
+# Fixed category levels shared by every frame: LightGBM stores pandas
+# category metadata at fit time and rejects predict frames whose levels
+# differ, which per-month astype('category') would cause.
+ZONE_ID_CATEGORIES = list(range(1, 266))
+BOROUGH_CATEGORIES = [
+    "Bronx", "Brooklyn", "EWR", "Manhattan", "Queens",
+    "Staten Island", "Unknown",
+]
+
+
+def categorical_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Assign fixed-category dtype to the protocol categorical columns."""
+    zone_cols = {"pu_zone", "do_zone"}
+    for col in config.CATEGORICAL_FEATURES:
+        cats = ZONE_ID_CATEGORIES if col in zone_cols else BOROUGH_CATEGORIES
+        df[col] = pd.Categorical(df[col], categories=cats)
+    return df
 
 
 def assert_no_leakage(columns: list[str] | set[str]) -> None:

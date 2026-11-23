@@ -5,9 +5,14 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
+from conftest import make_trips as _trips
 
 from nyc_eta import config, data, metrics
-from nyc_eta.features import assert_no_leakage
+from nyc_eta.features import (
+    BOROUGH_CATEGORIES,
+    ZONE_ID_CATEGORIES,
+    assert_no_leakage,
+)
 
 
 class TestCleaning:
@@ -67,6 +72,20 @@ class TestFeatures:
     def test_categorical_dtypes(self, feature_frame):
         for col in config.CATEGORICAL_FEATURES:
             assert str(feature_frame[col].dtype) == "category"
+
+    def test_categorical_levels_fixed_across_frames(self, builder):
+        # LightGBM requires identical pandas category metadata at predict
+        # time; per-frame astype('category') produced different levels.
+        f1 = builder.build_frame(_trips(50, seed=3))
+        f2 = builder.build_frame(_trips(50, seed=4))
+        for col in config.CATEGORICAL_FEATURES:
+            expected = (
+                ZONE_ID_CATEGORIES
+                if col.endswith("_zone")
+                else BOROUGH_CATEGORIES
+            )
+            assert list(f1[col].cat.categories) == expected
+            assert list(f2[col].cat.categories) == expected
 
     def test_road_distance_directed(self, builder, zone_infos):
         # (1,2)=3.5 directed, (2,1)=4.0 directed (not symmetrized)

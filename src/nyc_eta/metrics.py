@@ -44,7 +44,7 @@ def borough_slices(
     """MAE/RMSE per borough slice (default: pickup borough)."""
     out: dict[str, dict[str, float]] = {}
     pred = pd.Series(np.asarray(pred_minutes), index=df.index)
-    for borough, idx in df.groupby(by).groups.items():
+    for borough, idx in df.groupby(by, observed=True).groups.items():
         sub = df.loc[idx]
         p = pred.loc[idx].to_numpy()
         out[str(borough)] = {
