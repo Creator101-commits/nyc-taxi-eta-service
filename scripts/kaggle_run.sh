@@ -69,7 +69,7 @@ done
 if [ "$READY" -ne 1 ]; then
   echo "error: dataset $SRC_DATASET did not become ready" >&2
   exit 1
-done
+fi
 
 # "ready" precedes mount propagation by minutes; kernels pushed too early
 # mount the previous dataset version and fail the git_sha guard.
