@@ -439,8 +439,8 @@ def run_experiment(
     if not smoke:
         t0 = time.time()
         served = _train_served_model(
-            work_dir, raw_dir, file_records, builder, zone_infos,
-            best, sample_n, git_sha,
+            work_dir, raw_dir, feats, builder, zone_infos,
+            best, git_sha,
         )
         log.mark("served_model", time.time() - t0)
 
@@ -548,17 +548,24 @@ def _compute_shap(
 
 
 def _train_served_model(
-    work_dir: Path, raw_dir: Path, file_records: list[data.FileRecord],
+    work_dir: Path, raw_dir: Path,
+    feats: dict[str, pd.DataFrame],
     builder: FeatureBuilder, zone_infos: dict[int, ZoneInfo],
     best: models.TrainedModel,
-    sample_n: int, git_sha: str,
+    git_sha: str,
 ) -> dict[str, Any]:
-    """Train the final served model on SERVED_TRAIN_MONTHS."""
-    frames, counts = _download_months(
-        config.SERVED_TRAIN_MONTHS, raw_dir, file_records, sample_n
+    """Train the final served model on SERVED_TRAIN_MONTHS.
+
+    Those months are deployment months, so their cleaned, sampled feature
+    frames already exist in ``feats``; no re-download is needed.
+    """
+    missing = [m for m in config.SERVED_TRAIN_MONTHS if m not in feats]
+    if missing:
+        raise ValueError(f"served months missing from feats: {missing}")
+    train_df = pd.concat(
+        [feats[m] for m in config.SERVED_TRAIN_MONTHS], ignore_index=True
     )
-    fdfs = [builder.build_frame(frames[m]) for m in config.SERVED_TRAIN_MONTHS]
-    train_df = pd.concat(fdfs, ignore_index=True)
+    counts = {"reused_deploy_frames": True}
 
     # 80/20 conformal holdout: fixed random split on those months.
     rng = np.random.default_rng(0)
