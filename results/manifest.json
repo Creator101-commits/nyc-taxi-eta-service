@@ -1,0 +1,2541 @@
+{
+  "protocol": "nyc-taxi-eta-v1",
+  "git_sha": "e18c996af238f19b1a595e763b64a8f383a8f2c9",
+  "smoke": false,
+  "ordering_ok": true,
+  "card_write_epoch": 1795471046.2483158,
+  "first_deploy_read_epoch": 1795471046.2488792,
+  "timings_s": {
+    "zones": 1.15,
+    "osm_graph": 0.1,
+    "distances": 0.11,
+    "download_pre": 10.23,
+    "features_pre": 20.57,
+    "model_grid": 548.47,
+    "drift_val": 47.73,
+    "download_deploy": 34.72,
+    "features_deploy": 101.67,
+    "deploy_eval": 481.83,
+    "policies": 2307.07,
+    "bootstrap": 1.15,
+    "shap": 403.02,
+    "served_model": 28.54,
+    "web_export": 85.39
+  },
+  "total_s": 4100.27,
+  "files": [
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv",
+      "sha256": "1a99e105092230f8620f301edcca7f80d3080642ff404d28ed957d3fa222c8ed",
+      "size_bytes": 12331,
+      "last_modified": "Thu, 22 Feb 2024 21:33:00 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/misc/taxi_zones.zip",
+      "sha256": "f6d711917bb4340f8f644d5366c51665489eb2d426dd1a4a55677721ae5adf17",
+      "size_bytes": 1022574,
+      "last_modified": "Thu, 19 Feb 2026 17:12:14 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-01.parquet",
+      "sha256": "3ad95f39714bfc9864219e69e577f119925c6ba32d384ac68d40bdad1dc7726d",
+      "size_bytes": 110439634,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-02.parquet",
+      "sha256": "d20a9e3edf838017ae641e664da085564341c729aed2ee05c7631c74dccf761a",
+      "size_bytes": 103356025,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-03.parquet",
+      "sha256": "6883b45b3c1a8908346334b6143804f9dab4a223a72b3b9e3140ef0239920978",
+      "size_bytes": 116017372,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-04.parquet",
+      "sha256": "0903fb6c20ef49f1bc1238ac5e7ea00d963477b14cf62f2440c090ac920d8013",
+      "size_bytes": 110139137,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-05.parquet",
+      "sha256": "6001f518a5871ec7e85b856075cab5b41a76791b2e6adced7e299cf26d125daa",
+      "size_bytes": 111478943,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-06.parquet",
+      "sha256": "acc434ffb54b70cbba1319f31f1a38584d9d4e8863fbbeaa4944bb577dfdf5cc",
+      "size_bytes": 102903344,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-07.parquet",
+      "sha256": "f4136f0df68a90415ca42c48956db12d82b957f0a941145c2bf7346053a564e4",
+      "size_bytes": 93877343,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-08.parquet",
+      "sha256": "2f7cae03501aedc96b8534034509f40b61d1ce93a0957f2ab4e2f32295665a67",
+      "size_bytes": 89999675,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-09.parquet",
+      "sha256": "61fec423071ca0b3cf6b97cd2a51d3b8cca897acfdc4bc9b4518320bcf847861",
+      "size_bytes": 97110325,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-10.parquet",
+      "sha256": "7a29ec212d73381398ef94d1ad3ba3963d157e57d2373dad0345981223c248fd",
+      "size_bytes": 106293373,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-11.parquet",
+      "sha256": "2187309e5b5f73aad224facf1e1f97b3120039a3cffceaf569b49b81ae30b004",
+      "size_bytes": 100872983,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2019-12.parquet",
+      "sha256": "fbf893219b1ddefd5113609c63600cff1f48fc4c5ded05113eb19a435cc16c48",
+      "size_bytes": 101044777,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-01.parquet",
+      "sha256": "0c32c1d5ef0d37ac3ff1a3f1880f247cc40165edf18626e5a86866296a4a5b93",
+      "size_bytes": 93562858,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-02.parquet",
+      "sha256": "e57df0e7c410c02d78cd59a31394a118f3d92c50560a2d8fa3a2bf5e17dcffaa",
+      "size_bytes": 92134881,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-03.parquet",
+      "sha256": "6fa1343946bc1e3702fc351ff9818787cc40e4cf2b095d947ff5e452b5b42f84",
+      "size_bytes": 44442590,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-04.parquet",
+      "sha256": "3104e1e5548ade630988a4a8b9ec76c51a057b88159f78676c7d344f48491450",
+      "size_bytes": 4442620,
+      "last_modified": "Thu, 30 Jun 2022 03:16:18 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-05.parquet",
+      "sha256": "f6167e3c8f1039ec4015cb121e73f8e08710ad1681da747f2b5aa504008cf289",
+      "size_bytes": 6229864,
+      "last_modified": "Thu, 30 Jun 2022 03:16:18 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-06.parquet",
+      "sha256": "1ad5d65c3951d9082ab5e24acca2235cc34f014a34b4225556cb9a885cb1101d",
+      "size_bytes": 9505358,
+      "last_modified": "Thu, 30 Jun 2022 03:16:18 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-07.parquet",
+      "sha256": "14a450d61c1828a3e9f3f29e3e2594b4c0eb687cd2fb0e9eeb2e10dbed9e4eb2",
+      "size_bytes": 13387778,
+      "last_modified": "Thu, 30 Jun 2022 03:16:18 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-08.parquet",
+      "sha256": "e1242bad250d52371f59dbe35e1925897dd6699a68130d69e49126b3e4ec8e86",
+      "size_bytes": 16601463,
+      "last_modified": "Thu, 30 Jun 2022 03:16:18 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-09.parquet",
+      "sha256": "353574457176ea1528ba1c07128fa90cf6594920b26bc79721dc844077696606",
+      "size_bytes": 21381938,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-10.parquet",
+      "sha256": "4e447b9c7cc6c48f6c0bf62ca93ef0051ff89b06d3d039a3c3489cf64a9c7e41",
+      "size_bytes": 26306876,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-11.parquet",
+      "sha256": "478716ac6420213ab45d9a1107fe5a1ba8c59de0e4bc27588b6f3b2079ad7210",
+      "size_bytes": 23583368,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2020-12.parquet",
+      "sha256": "b3e029240c4af3b8bc373169a7412150d5eb1721e2b8498975c13226dfd2bb55",
+      "size_bytes": 23020036,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-01.parquet",
+      "sha256": "66af41de61fcd2d86f8b3365576cc44486dba5559812d2a3ed334d76437422dd",
+      "size_bytes": 21686067,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-02.parquet",
+      "sha256": "3fb10e315a088b47c2321f930faecff92b24eb39e3ee64e69f546ce5dcf82aef",
+      "size_bytes": 21777258,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-03.parquet",
+      "sha256": "bbdabe927bc19c2fa3bf9ac4567cca5fa1231ac3cd0d9ecb16a98f1ba2a261ac",
+      "size_bytes": 30007852,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-04.parquet",
+      "sha256": "e09ae9aef913a5a2bab4bf9920e86d3c3ea228a09b264676606875be4ff6b901",
+      "size_bytes": 34018560,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-05.parquet",
+      "sha256": "c587064467c70699d11b5e29d106908a7cd880fdeaa289b328b27fe40f3b5a29",
+      "size_bytes": 38743682,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-06.parquet",
+      "sha256": "dfe2d5ea8414234d22858cc8d54fd8a3eb157eef1fb741eafed55a854dce0aec",
+      "size_bytes": 44071592,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-07.parquet",
+      "sha256": "14354e321ef5ded1c3419104ff9e63c512121c355b978b7f88a542722153b630",
+      "size_bytes": 43697690,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-08.parquet",
+      "sha256": "0983adfe5ba8729806807c337fb2f44f979d7682e57b5db0ad7dffbdcb6c7978",
+      "size_bytes": 43425907,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-09.parquet",
+      "sha256": "29bccb63f07d1441a2dd6f64b03ef731874ad79f0ebaeb912e39767850eb43ed",
+      "size_bytes": 46125883,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-10.parquet",
+      "sha256": "41f0f91ef3749ca467bb89b433fd82259e3527b8ade275a289c4960b39cc1ff6",
+      "size_bytes": 53286464,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-11.parquet",
+      "sha256": "dd13379e66178db0b872d7bcc418df40f1ca00ac1b3dafb02deb681e9be385b3",
+      "size_bytes": 53100722,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    },
+    {
+      "url": "https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2021-12.parquet",
+      "sha256": "692ea4bb4a71bf361c51c6ccdf03c772e4c303400a105d63f2a9300b92f00473",
+      "size_bytes": 49639052,
+      "last_modified": "Thu, 30 Jun 2022 03:16:20 GMT"
+    }
+  ],
+  "clean_counts": {
+    "2019-01": {
+      "raw": 7696617,
+      "pickup_in_month": 7696080,
+      "duration_ok": 7600903,
+      "zones_ok": 7431162,
+      "dropoff_after_pickup": 7431162
+    },
+    "2019-02": {
+      "raw": 7049370,
+      "pickup_in_month": 7048744,
+      "duration_ok": 6963743,
+      "zones_ok": 6883289,
+      "dropoff_after_pickup": 6883289
+    },
+    "2019-03": {
+      "raw": 7866620,
+      "pickup_in_month": 7866110,
+      "duration_ok": 7773632,
+      "zones_ok": 7706376,
+      "dropoff_after_pickup": 7706376
+    },
+    "2019-04": {
+      "raw": 7475949,
+      "pickup_in_month": 7475636,
+      "duration_ok": 7388145,
+      "zones_ok": 7303766,
+      "dropoff_after_pickup": 7303766
+    },
+    "2019-05": {
+      "raw": 7598445,
+      "pickup_in_month": 7598068,
+      "duration_ok": 7503088,
+      "zones_ok": 7422742,
+      "dropoff_after_pickup": 7422742
+    },
+    "2019-06": {
+      "raw": 6971560,
+      "pickup_in_month": 6971026,
+      "duration_ok": 6877116,
+      "zones_ok": 6803708,
+      "dropoff_after_pickup": 6803708
+    },
+    "2019-07": {
+      "raw": 6310419,
+      "pickup_in_month": 6310134,
+      "duration_ok": 6222281,
+      "zones_ok": 6158379,
+      "dropoff_after_pickup": 6158379
+    },
+    "2019-08": {
+      "raw": 6073357,
+      "pickup_in_month": 6072851,
+      "duration_ok": 5986869,
+      "zones_ok": 5921372,
+      "dropoff_after_pickup": 5921372
+    },
+    "2019-09": {
+      "raw": 6567788,
+      "pickup_in_month": 6567396,
+      "duration_ok": 6479213,
+      "zones_ok": 6413369,
+      "dropoff_after_pickup": 6413369
+    },
+    "2019-10": {
+      "raw": 7213891,
+      "pickup_in_month": 7213588,
+      "duration_ok": 7121247,
+      "zones_ok": 7054326,
+      "dropoff_after_pickup": 7054326
+    },
+    "2019-11": {
+      "raw": 6878111,
+      "pickup_in_month": 6877463,
+      "duration_ok": 6787984,
+      "zones_ok": 6726054,
+      "dropoff_after_pickup": 6726054
+    },
+    "2019-12": {
+      "raw": 6896317,
+      "pickup_in_month": 6895933,
+      "duration_ok": 6804854,
+      "zones_ok": 6740051,
+      "dropoff_after_pickup": 6740051
+    },
+    "2020-01": {
+      "raw": 6405008,
+      "pickup_in_month": 6404796,
+      "duration_ok": 6322470,
+      "zones_ok": 6268070,
+      "dropoff_after_pickup": 6268070
+    },
+    "2020-02": {
+      "raw": 6299367,
+      "pickup_in_month": 6299064,
+      "duration_ok": 6221820,
+      "zones_ok": 6171869,
+      "dropoff_after_pickup": 6171869
+    },
+    "2020-03": {
+      "raw": 3007687,
+      "pickup_in_month": 3007261,
+      "duration_ok": 2969411,
+      "zones_ok": 2944925,
+      "dropoff_after_pickup": 2944925
+    },
+    "2020-04": {
+      "raw": 238073,
+      "pickup_in_month": 237941,
+      "duration_ok": 233405,
+      "zones_ok": 230853,
+      "dropoff_after_pickup": 230853
+    },
+    "2020-05": {
+      "raw": 348415,
+      "pickup_in_month": 348392,
+      "duration_ok": 341903,
+      "zones_ok": 336846,
+      "dropoff_after_pickup": 336846
+    },
+    "2020-06": {
+      "raw": 549797,
+      "pickup_in_month": 549788,
+      "duration_ok": 541003,
+      "zones_ok": 534831,
+      "dropoff_after_pickup": 534831
+    },
+    "2020-07": {
+      "raw": 800412,
+      "pickup_in_month": 800402,
+      "duration_ok": 788088,
+      "zones_ok": 778731,
+      "dropoff_after_pickup": 778731
+    },
+    "2020-08": {
+      "raw": 1007286,
+      "pickup_in_month": 1007270,
+      "duration_ok": 992689,
+      "zones_ok": 982980,
+      "dropoff_after_pickup": 982980
+    },
+    "2020-09": {
+      "raw": 1341017,
+      "pickup_in_month": 1340883,
+      "duration_ok": 1318417,
+      "zones_ok": 1301507,
+      "dropoff_after_pickup": 1301507
+    },
+    "2020-10": {
+      "raw": 1681132,
+      "pickup_in_month": 1681100,
+      "duration_ok": 1654439,
+      "zones_ok": 1633990,
+      "dropoff_after_pickup": 1633990
+    },
+    "2020-11": {
+      "raw": 1509000,
+      "pickup_in_month": 1508888,
+      "duration_ok": 1485712,
+      "zones_ok": 1467239,
+      "dropoff_after_pickup": 1467239
+    },
+    "2020-12": {
+      "raw": 1461898,
+      "pickup_in_month": 1461863,
+      "duration_ok": 1438458,
+      "zones_ok": 1420012,
+      "dropoff_after_pickup": 1420012
+    },
+    "2021-01": {
+      "raw": 1369769,
+      "pickup_in_month": 1369745,
+      "duration_ok": 1346868,
+      "zones_ok": 1328650,
+      "dropoff_after_pickup": 1328650
+    },
+    "2021-02": {
+      "raw": 1371709,
+      "pickup_in_month": 1371678,
+      "duration_ok": 1347560,
+      "zones_ok": 1328203,
+      "dropoff_after_pickup": 1328203
+    },
+    "2021-03": {
+      "raw": 1925152,
+      "pickup_in_month": 1925119,
+      "duration_ok": 1895729,
+      "zones_ok": 1870013,
+      "dropoff_after_pickup": 1870013
+    },
+    "2021-04": {
+      "raw": 2171187,
+      "pickup_in_month": 2171145,
+      "duration_ok": 2141402,
+      "zones_ok": 2112932,
+      "dropoff_after_pickup": 2112932
+    },
+    "2021-05": {
+      "raw": 2507109,
+      "pickup_in_month": 2507015,
+      "duration_ok": 2473084,
+      "zones_ok": 2443280,
+      "dropoff_after_pickup": 2443280
+    },
+    "2021-06": {
+      "raw": 2834264,
+      "pickup_in_month": 2834141,
+      "duration_ok": 2796195,
+      "zones_ok": 2763358,
+      "dropoff_after_pickup": 2763358
+    },
+    "2021-07": {
+      "raw": 2821746,
+      "pickup_in_month": 2821616,
+      "duration_ok": 2780762,
+      "zones_ok": 2744500,
+      "dropoff_after_pickup": 2744500
+    },
+    "2021-08": {
+      "raw": 2788757,
+      "pickup_in_month": 2788231,
+      "duration_ok": 2746515,
+      "zones_ok": 2708439,
+      "dropoff_after_pickup": 2708439
+    },
+    "2021-09": {
+      "raw": 2963793,
+      "pickup_in_month": 2963688,
+      "duration_ok": 2921747,
+      "zones_ok": 2881495,
+      "dropoff_after_pickup": 2881495
+    },
+    "2021-10": {
+      "raw": 3463504,
+      "pickup_in_month": 3463393,
+      "duration_ok": 3419266,
+      "zones_ok": 3373224,
+      "dropoff_after_pickup": 3373224
+    },
+    "2021-11": {
+      "raw": 3472949,
+      "pickup_in_month": 3472822,
+      "duration_ok": 3427433,
+      "zones_ok": 3379863,
+      "dropoff_after_pickup": 3379863
+    },
+    "2021-12": {
+      "raw": 3214369,
+      "pickup_in_month": 3214261,
+      "duration_ok": 3169341,
+      "zones_ok": 3122643,
+      "dropoff_after_pickup": 3122643
+    }
+  },
+  "osm_graph": {
+    "source": "kaggle_dataset",
+    "dataset_id": "sreeharshak101/nyc-taxi-eta-osm-graph",
+    "sha256": "9dab045245e2e59ca1a7cdbed929ae576704def0d5abdebec119fd00a081a91b",
+    "osm_base": "",
+    "n_nodes": 55378,
+    "n_edges": 139262,
+    "distances_sha256": "d3bc842f3c14fc654d9aaa6d7c4ce6e2e4e60f9adc23a1b0765647ed15ef9773"
+  },
+  "distances_sha256": "d3bc842f3c14fc654d9aaa6d7c4ce6e2e4e60f9adc23a1b0765647ed15ef9773",
+  "model_grid": [
+    {
+      "num_leaves": 63,
+      "min_data_in_leaf": 50,
+      "best_iteration": 1535,
+      "cap_bound": false,
+      "val_mae": 3.6670945750976047
+    },
+    {
+      "num_leaves": 63,
+      "min_data_in_leaf": 500,
+      "best_iteration": 1353,
+      "cap_bound": false,
+      "val_mae": 3.6656181162253723
+    },
+    {
+      "num_leaves": 255,
+      "min_data_in_leaf": 50,
+      "best_iteration": 509,
+      "cap_bound": false,
+      "val_mae": 3.6613630436088167
+    },
+    {
+      "num_leaves": 255,
+      "min_data_in_leaf": 500,
+      "best_iteration": 462,
+      "cap_bound": false,
+      "val_mae": 3.6609312998516548
+    }
+  ],
+  "selected": {
+    "num_leaves": 255,
+    "min_data_in_leaf": 500,
+    "best_iteration": 462,
+    "cap_bound": false,
+    "val_mae": 3.6609312998516548
+  },
+  "conformal": {
+    "alpha": 0.2,
+    "q": 0.4014218616234373,
+    "val_coverage": 0.800005
+  },
+  "baseline_val_mae": 4.6231579375,
+  "drift_thresholds": {
+    "drift_share": 0.08333333333333333,
+    "pred_wasserstein": 0.6322591465597522,
+    "volume_ratio": 1.01249377953856
+  },
+  "drift_report": {
+    "drift_share": {
+      "spearman_vs_mae_ratio": 0.45974577087130164,
+      "spearman_lagged": {
+        "-1": 0.37608997758748364,
+        "0": 0.45974577087130164,
+        "1": 0.4157936290932097
+      },
+      "values": {
+        "2019-07": 0.0,
+        "2019-08": 0.08333333333333333,
+        "2019-09": 0.0,
+        "2019-10": 0.0,
+        "2019-11": 0.0,
+        "2019-12": 0.0,
+        "2020-01": 0.0,
+        "2020-02": 0.0,
+        "2020-03": 0.08333333333333333,
+        "2020-04": 0.5,
+        "2020-05": 0.5833333333333334,
+        "2020-06": 0.5,
+        "2020-07": 0.4166666666666667,
+        "2020-08": 0.5,
+        "2020-09": 0.25,
+        "2020-10": 0.25,
+        "2020-11": 0.25,
+        "2020-12": 0.25,
+        "2021-01": 0.25,
+        "2021-02": 0.25,
+        "2021-03": 0.3333333333333333,
+        "2021-04": 0.25,
+        "2021-05": 0.08333333333333333,
+        "2021-06": 0.0,
+        "2021-07": 0.16666666666666666,
+        "2021-08": 0.25,
+        "2021-09": 0.16666666666666666,
+        "2021-10": 0.16666666666666666,
+        "2021-11": 0.16666666666666666,
+        "2021-12": 0.16666666666666666
+      }
+    },
+    "pred_wasserstein": {
+      "spearman_vs_mae_ratio": 0.24048943270300333,
+      "spearman_lagged": {
+        "-1": 0.17290640394088666,
+        "0": 0.24048943270300333,
+        "1": 0.17487684729064035
+      },
+      "values": {
+        "2019-07": 0.769845219887459,
+        "2019-08": 1.0366313460157537,
+        "2019-09": 0.6249277670237595,
+        "2019-10": 0.538416422259618,
+        "2019-11": 0.2782612741969833,
+        "2019-12": 0.2888319002345261,
+        "2020-01": 0.29723139493209,
+        "2020-02": 0.27990773583526546,
+        "2020-03": 0.5351835201882876,
+        "2020-04": 1.1261175858553407,
+        "2020-05": 2.598877145155341,
+        "2020-06": 2.086100732107244,
+        "2020-07": 1.830349981152162,
+        "2020-08": 1.5176551524613684,
+        "2020-09": 1.0154380545703168,
+        "2020-10": 0.7875989536792443,
+        "2020-11": 0.5803372638270777,
+        "2020-12": 0.6849519532142598,
+        "2021-01": 0.8784336487059965,
+        "2021-02": 0.8425333506036585,
+        "2021-03": 1.0225981426774196,
+        "2021-04": 1.3687767884332738,
+        "2021-05": 1.2118703946493037,
+        "2021-06": 1.234591670645829,
+        "2021-07": 1.80756891554193,
+        "2021-08": 1.9814091613956206,
+        "2021-09": 1.8525323344008564,
+        "2021-10": 1.3731854529399272,
+        "2021-11": 1.3282992049349343,
+        "2021-12": 1.7218122729900642
+      }
+    },
+    "volume_ratio": {
+      "spearman_vs_mae_ratio": -0.4042269187986652,
+      "spearman_lagged": {
+        "-1": -0.3068965517241379,
+        "0": -0.4042269187986652,
+        "1": -0.35320197044334967
+      },
+      "values": {
+        "2019-07": 0.8400292546259721,
+        "2019-08": 0.807700485391221,
+        "2019-09": 0.8748109820313619,
+        "2019-10": 0.9622402602484542,
+        "2019-11": 0.9174625543822552,
+        "2019-12": 0.9193718050920604,
+        "2020-01": 0.8549915765241822,
+        "2020-02": 0.8418693483657216,
+        "2020-03": 0.4017003748355519,
+        "2020-04": 0.031489337294468164,
+        "2020-05": 0.04594723616453943,
+        "2020-06": 0.07295323757775599,
+        "2020-07": 0.10622224151584986,
+        "2020-08": 0.1340826793401702,
+        "2020-09": 0.1775311254959276,
+        "2020-10": 0.22288322978600247,
+        "2020-11": 0.20013767966020876,
+        "2020-12": 0.19369571471972347,
+        "2021-01": 0.18123354687309726,
+        "2021-02": 0.1811725741598528,
+        "2021-03": 0.25507777720904773,
+        "2021-04": 0.28821296854827616,
+        "2021-05": 0.33327384970014756,
+        "2021-06": 0.3769338588944781,
+        "2021-07": 0.3743615469786742,
+        "2021-08": 0.36944267223077915,
+        "2021-09": 0.3930482513431644,
+        "2021-10": 0.4601221916362147,
+        "2021-11": 0.4610277796523894,
+        "2021-12": 0.4259418707021782
+      }
+    },
+    "alarm_scores": {
+      "tp": 4,
+      "fp": 19,
+      "fn": 0,
+      "precision": 0.17391304347826086,
+      "recall": 1.0
+    },
+    "posthoc_two_sided_volume": {
+      "label": "post-hoc sensitivity; not used by any policy",
+      "rule": "volume alarm when outside [min, max] of the validation months",
+      "low": 0.9280548923560508,
+      "high": 1.01249377953856,
+      "alarm_months": [
+        "2019-07",
+        "2019-08",
+        "2019-09",
+        "2019-11",
+        "2019-12",
+        "2020-01",
+        "2020-02",
+        "2020-03",
+        "2020-04",
+        "2020-05",
+        "2020-06",
+        "2020-07",
+        "2020-08",
+        "2020-09",
+        "2020-10",
+        "2020-11",
+        "2020-12",
+        "2021-01",
+        "2021-02",
+        "2021-03",
+        "2021-04",
+        "2021-05",
+        "2021-06",
+        "2021-07",
+        "2021-08",
+        "2021-09",
+        "2021-10",
+        "2021-11",
+        "2021-12"
+      ],
+      "alarm_scores": {
+        "tp": 4,
+        "fp": 25,
+        "fn": 0,
+        "precision": 0.13793103448275862,
+        "recall": 1.0
+      }
+    }
+  },
+  "monthly_metrics": {
+    "2019-07": {
+      "mae": 3.4592702444483097,
+      "rmse": 5.513795914422021,
+      "median_ape": 0.20920574765588162,
+      "n": 200000,
+      "cleaned_n": 6158379,
+      "baseline_mae": 4.294340166666666,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.883543261042794,
+          "n": 411
+        },
+        "Brooklyn": {
+          "mae": 4.690661967967082,
+          "n": 2466
+        },
+        "EWR": {
+          "mae": 9.515036237690662,
+          "n": 5
+        },
+        "Manhattan": {
+          "mae": 3.2436080819835484,
+          "n": 182236
+        },
+        "Queens": {
+          "mae": 5.783691466963835,
+          "n": 14873
+        },
+        "Staten Island": {
+          "mae": 31.90659985235608,
+          "n": 9
+        }
+      },
+      "coverage": 0.806925,
+      "signals": {
+        "drift_share": 0.0,
+        "pred_wasserstein": 0.769845219887459,
+        "volume_ratio": 0.8400292546259721
+      },
+      "signal_alarms": {
+        "drift_share": false,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2019-08": {
+      "mae": 3.263337655806013,
+      "rmse": 5.070310813303341,
+      "median_ape": 0.20386512204158103,
+      "n": 200000,
+      "cleaned_n": 5921372,
+      "baseline_mae": 4.013020166666667,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 5.86874453203786,
+          "n": 396
+        },
+        "Brooklyn": {
+          "mae": 4.401654157356145,
+          "n": 2287
+        },
+        "EWR": {
+          "mae": 1.427258101997559,
+          "n": 2
+        },
+        "Manhattan": {
+          "mae": 3.0592811344069117,
+          "n": 181737
+        },
+        "Queens": {
+          "mae": 5.409326069783336,
+          "n": 15573
+        },
+        "Staten Island": {
+          "mae": 10.012068798671173,
+          "n": 5
+        }
+      },
+      "coverage": 0.82044,
+      "signals": {
+        "drift_share": 0.08333333333333333,
+        "pred_wasserstein": 1.0366313460157537,
+        "volume_ratio": 0.807700485391221
+      },
+      "signal_alarms": {
+        "drift_share": false,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2019-09": {
+      "mae": 3.7927528952325944,
+      "rmse": 6.273168630438481,
+      "median_ape": 0.21247673196216976,
+      "n": 200000,
+      "cleaned_n": 6413369,
+      "baseline_mae": 4.7675008750000005,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 7.223457214905978,
+          "n": 329
+        },
+        "Brooklyn": {
+          "mae": 4.519831526075166,
+          "n": 2505
+        },
+        "EWR": {
+          "mae": 5.481616494881494,
+          "n": 1
+        },
+        "Manhattan": {
+          "mae": 3.5039794893484544,
+          "n": 183087
+        },
+        "Queens": {
+          "mae": 7.336600131055427,
+          "n": 14074
+        },
+        "Staten Island": {
+          "mae": 14.499755671745113,
+          "n": 4
+        }
+      },
+      "coverage": 0.794945,
+      "signals": {
+        "drift_share": 0.0,
+        "pred_wasserstein": 0.6249277670237595,
+        "volume_ratio": 0.8748109820313619
+      },
+      "signal_alarms": {
+        "drift_share": false,
+        "pred_wasserstein": false,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2019-10": {
+      "mae": 3.7140597429542304,
+      "rmse": 5.956554894817216,
+      "median_ape": 0.21349361588565835,
+      "n": 200000,
+      "cleaned_n": 7054326,
+      "baseline_mae": 4.628762916666665,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.84167463773592,
+          "n": 347
+        },
+        "Brooklyn": {
+          "mae": 4.404072968174269,
+          "n": 2272
+        },
+        "EWR": {
+          "mae": 52.22999768708364,
+          "n": 2
+        },
+        "Manhattan": {
+          "mae": 3.4992784922986213,
+          "n": 183915
+        },
+        "Queens": {
+          "mae": 6.442732586436605,
+          "n": 13459
+        },
+        "Staten Island": {
+          "mae": 8.966384106870638,
+          "n": 5
+        }
+      },
+      "coverage": 0.7945,
+      "signals": {
+        "drift_share": 0.0,
+        "pred_wasserstein": 0.538416422259618,
+        "volume_ratio": 0.9622402602484542
+      },
+      "signal_alarms": {
+        "drift_share": false,
+        "pred_wasserstein": false,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2019-11": {
+      "mae": 3.7061275410810723,
+      "rmse": 5.942815689951102,
+      "median_ape": 0.2176889177981364,
+      "n": 200000,
+      "cleaned_n": 6726054,
+      "baseline_mae": 4.535862,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.123598567484889,
+          "n": 325
+        },
+        "Brooklyn": {
+          "mae": 4.651060223217927,
+          "n": 2195
+        },
+        "EWR": {
+          "mae": 22.417425245249078,
+          "n": 5
+        },
+        "Manhattan": {
+          "mae": 3.4886012690535355,
+          "n": 184790
+        },
+        "Queens": {
+          "mae": 6.634944310617492,
+          "n": 12677
+        },
+        "Staten Island": {
+          "mae": 18.04460393643346,
+          "n": 8
+        }
+      },
+      "coverage": 0.789295,
+      "signals": {
+        "drift_share": 0.0,
+        "pred_wasserstein": 0.2782612741969833,
+        "volume_ratio": 0.9174625543822552
+      },
+      "signal_alarms": {
+        "drift_share": false,
+        "pred_wasserstein": false,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2019-12": {
+      "mae": 4.001201331896848,
+      "rmse": 6.4711514883783146,
+      "median_ape": 0.23047988526418828,
+      "n": 200000,
+      "cleaned_n": 6740051,
+      "baseline_mae": 4.790026958333333,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 5.796546805307534,
+          "n": 366
+        },
+        "Brooklyn": {
+          "mae": 4.545513643065303,
+          "n": 2272
+        },
+        "EWR": {
+          "mae": 55.65645074195098,
+          "n": 3
+        },
+        "Manhattan": {
+          "mae": 3.7431245529872026,
+          "n": 184151
+        },
+        "Queens": {
+          "mae": 7.440485091393891,
+          "n": 13201
+        },
+        "Staten Island": {
+          "mae": 14.625807245667264,
+          "n": 7
+        }
+      },
+      "coverage": 0.767065,
+      "signals": {
+        "drift_share": 0.0,
+        "pred_wasserstein": 0.2888319002345261,
+        "volume_ratio": 0.9193718050920604
+      },
+      "signal_alarms": {
+        "drift_share": false,
+        "pred_wasserstein": false,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2020-01": {
+      "mae": 3.022671173165571,
+      "rmse": 4.575040298586029,
+      "median_ape": 0.20649385178480528,
+      "n": 200000,
+      "cleaned_n": 6268070,
+      "baseline_mae": 3.624044541666667,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.002778815237543,
+          "n": 415
+        },
+        "Brooklyn": {
+          "mae": 4.298087519174011,
+          "n": 2165
+        },
+        "EWR": {
+          "mae": 4.77331511966016,
+          "n": 3
+        },
+        "Manhattan": {
+          "mae": 2.859008794608062,
+          "n": 184666
+        },
+        "Queens": {
+          "mae": 5.0737048925648525,
+          "n": 12741
+        },
+        "Staten Island": {
+          "mae": 11.760989915888157,
+          "n": 10
+        }
+      },
+      "coverage": 0.822895,
+      "signals": {
+        "drift_share": 0.0,
+        "pred_wasserstein": 0.29723139493209,
+        "volume_ratio": 0.8549915765241822
+      },
+      "signal_alarms": {
+        "drift_share": false,
+        "pred_wasserstein": false,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2020-02": {
+      "mae": 3.0100856828738136,
+      "rmse": 4.639574298004248,
+      "median_ape": 0.2001129941300649,
+      "n": 200000,
+      "cleaned_n": 6171869,
+      "baseline_mae": 3.724283166666666,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.6036173509932805,
+          "n": 363
+        },
+        "Brooklyn": {
+          "mae": 4.040128625659078,
+          "n": 2151
+        },
+        "EWR": {
+          "mae": 1.0934412530299449,
+          "n": 2
+        },
+        "Manhattan": {
+          "mae": 2.8597798561388004,
+          "n": 185789
+        },
+        "Queens": {
+          "mae": 5.089518902366513,
+          "n": 11687
+        },
+        "Staten Island": {
+          "mae": 16.334101990536105,
+          "n": 8
+        }
+      },
+      "coverage": 0.82839,
+      "signals": {
+        "drift_share": 0.0,
+        "pred_wasserstein": 0.27990773583526546,
+        "volume_ratio": 0.8418693483657216
+      },
+      "signal_alarms": {
+        "drift_share": false,
+        "pred_wasserstein": false,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2020-03": {
+      "mae": 3.29591245775493,
+      "rmse": 5.238341717120025,
+      "median_ape": 0.21865742449875827,
+      "n": 200000,
+      "cleaned_n": 2944925,
+      "baseline_mae": 3.878699291666667,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.0740366713923954,
+          "n": 611
+        },
+        "Brooklyn": {
+          "mae": 4.893609500981157,
+          "n": 2659
+        },
+        "EWR": {
+          "mae": 1.449417331884831,
+          "n": 1
+        },
+        "Manhattan": {
+          "mae": 3.1248157092286712,
+          "n": 185031
+        },
+        "Queens": {
+          "mae": 5.489214472168019,
+          "n": 11688
+        },
+        "Staten Island": {
+          "mae": 11.198381933441894,
+          "n": 10
+        }
+      },
+      "coverage": 0.798205,
+      "signals": {
+        "drift_share": 0.08333333333333333,
+        "pred_wasserstein": 0.5351835201882876,
+        "volume_ratio": 0.4017003748355519
+      },
+      "signal_alarms": {
+        "drift_share": false,
+        "pred_wasserstein": false,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2020-04": {
+      "mae": 5.311892481795189,
+      "rmse": 7.730610806678304,
+      "median_ape": 0.509568380849514,
+      "n": 200000,
+      "cleaned_n": 230853,
+      "baseline_mae": 4.554444083333334,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 7.39578997822309,
+          "n": 4478
+        },
+        "Brooklyn": {
+          "mae": 7.74901606321753,
+          "n": 6101
+        },
+        "EWR": {
+          "mae": 22.125,
+          "n": 2
+        },
+        "Manhattan": {
+          "mae": 5.055502515773306,
+          "n": 181249
+        },
+        "Queens": {
+          "mae": 7.971447418813969,
+          "n": 8078
+        },
+        "Staten Island": {
+          "mae": 13.489392437927538,
+          "n": 92
+        }
+      },
+      "coverage": 0.52438,
+      "signals": {
+        "drift_share": 0.5,
+        "pred_wasserstein": 1.1261175858553407,
+        "volume_ratio": 0.031489337294468164
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": true
+    },
+    "2020-05": {
+      "mae": 5.054548210338038,
+      "rmse": 7.410590277099297,
+      "median_ape": 0.39838143897531064,
+      "n": 200000,
+      "cleaned_n": 336846,
+      "baseline_mae": 4.727446458333334,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 7.09004947045389,
+          "n": 6699
+        },
+        "Brooklyn": {
+          "mae": 6.467149898301016,
+          "n": 10863
+        },
+        "EWR": {
+          "mae": 1.5358781327267184,
+          "n": 4
+        },
+        "Manhattan": {
+          "mae": 4.735092169209817,
+          "n": 171252
+        },
+        "Queens": {
+          "mae": 7.294644967239273,
+          "n": 11013
+        },
+        "Staten Island": {
+          "mae": 11.388630896666765,
+          "n": 169
+        }
+      },
+      "coverage": 0.610395,
+      "signals": {
+        "drift_share": 0.5833333333333334,
+        "pred_wasserstein": 2.598877145155341,
+        "volume_ratio": 0.04594723616453943
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": true
+    },
+    "2020-06": {
+      "mae": 4.400694115526444,
+      "rmse": 6.283395143427518,
+      "median_ape": 0.335681004918265,
+      "n": 200000,
+      "cleaned_n": 534831,
+      "baseline_mae": 4.357705208333333,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 5.88387485501387,
+          "n": 3578
+        },
+        "Brooklyn": {
+          "mae": 5.654434926599428,
+          "n": 6799
+        },
+        "EWR": {
+          "mae": 11.904459904334992,
+          "n": 2
+        },
+        "Manhattan": {
+          "mae": 4.147939434281767,
+          "n": 177368
+        },
+        "Queens": {
+          "mae": 6.882382290021497,
+          "n": 12046
+        },
+        "Staten Island": {
+          "mae": 9.667189579725841,
+          "n": 207
+        }
+      },
+      "coverage": 0.67121,
+      "signals": {
+        "drift_share": 0.5,
+        "pred_wasserstein": 2.086100732107244,
+        "volume_ratio": 0.07295323757775599
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": true
+    },
+    "2020-07": {
+      "mae": 4.152373563383666,
+      "rmse": 5.943832666325069,
+      "median_ape": 0.3169881699761213,
+      "n": 200000,
+      "cleaned_n": 778731,
+      "baseline_mae": 4.213407416666666,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.1378618049111155,
+          "n": 3181
+        },
+        "Brooklyn": {
+          "mae": 5.662659383558158,
+          "n": 6040
+        },
+        "EWR": {
+          "mae": 1.442173357172492,
+          "n": 1
+        },
+        "Manhattan": {
+          "mae": 3.920090982641572,
+          "n": 179576
+        },
+        "Queens": {
+          "mae": 6.444256319552634,
+          "n": 11142
+        },
+        "Staten Island": {
+          "mae": 16.50178689940573,
+          "n": 60
+        }
+      },
+      "coverage": 0.69487,
+      "signals": {
+        "drift_share": 0.4166666666666667,
+        "pred_wasserstein": 1.830349981152162,
+        "volume_ratio": 0.10622224151584986
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": true
+    },
+    "2020-08": {
+      "mae": 3.9239245147547863,
+      "rmse": 5.692566127853745,
+      "median_ape": 0.29306362237665007,
+      "n": 200000,
+      "cleaned_n": 982980,
+      "baseline_mae": 4.124411125,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 5.963671747993328,
+          "n": 3003
+        },
+        "Brooklyn": {
+          "mae": 5.470594057941139,
+          "n": 5739
+        },
+        "EWR": {
+          "mae": 0.25431359762774486,
+          "n": 2
+        },
+        "Manhattan": {
+          "mae": 3.6903902629858036,
+          "n": 180119
+        },
+        "Queens": {
+          "mae": 6.315172199005344,
+          "n": 11085
+        },
+        "Staten Island": {
+          "mae": 14.743483871145905,
+          "n": 52
+        }
+      },
+      "coverage": 0.720705,
+      "signals": {
+        "drift_share": 0.5,
+        "pred_wasserstein": 1.5176551524613684,
+        "volume_ratio": 0.1340826793401702
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2020-09": {
+      "mae": 3.6395789141651975,
+      "rmse": 5.302465568273448,
+      "median_ape": 0.2682580803371768,
+      "n": 200000,
+      "cleaned_n": 1301507,
+      "baseline_mae": 3.8917378333333335,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 5.980553173494042,
+          "n": 2074
+        },
+        "Brooklyn": {
+          "mae": 5.458701887165494,
+          "n": 4367
+        },
+        "Manhattan": {
+          "mae": 3.4564488540462714,
+          "n": 184903
+        },
+        "Queens": {
+          "mae": 6.037225684882605,
+          "n": 8622
+        },
+        "Staten Island": {
+          "mae": 15.09535574075075,
+          "n": 34
+        }
+      },
+      "coverage": 0.74958,
+      "signals": {
+        "drift_share": 0.25,
+        "pred_wasserstein": 1.0154380545703168,
+        "volume_ratio": 0.1775311254959276
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2020-10": {
+      "mae": 3.483346248065344,
+      "rmse": 5.139251472183137,
+      "median_ape": 0.25199486228890366,
+      "n": 200000,
+      "cleaned_n": 1633990,
+      "baseline_mae": 3.8133884999999994,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 5.851490516373399,
+          "n": 1755
+        },
+        "Brooklyn": {
+          "mae": 5.613527679820938,
+          "n": 3914
+        },
+        "EWR": {
+          "mae": 0.10302361267422877,
+          "n": 2
+        },
+        "Manhattan": {
+          "mae": 3.308038168772136,
+          "n": 186504
+        },
+        "Queens": {
+          "mae": 6.011440863247148,
+          "n": 7778
+        },
+        "Staten Island": {
+          "mae": 15.084951229239197,
+          "n": 47
+        }
+      },
+      "coverage": 0.768805,
+      "signals": {
+        "drift_share": 0.25,
+        "pred_wasserstein": 0.7875989536792443,
+        "volume_ratio": 0.22288322978600247
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2020-11": {
+      "mae": 3.455265532693061,
+      "rmse": 5.117563350959072,
+      "median_ape": 0.2528041892574518,
+      "n": 200000,
+      "cleaned_n": 1467239,
+      "baseline_mae": 3.7292505833333327,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.142252600200819,
+          "n": 1819
+        },
+        "Brooklyn": {
+          "mae": 5.571394718010097,
+          "n": 3986
+        },
+        "EWR": {
+          "mae": 8.84368258339697,
+          "n": 1
+        },
+        "Manhattan": {
+          "mae": 3.2654615110737604,
+          "n": 186093
+        },
+        "Queens": {
+          "mae": 6.137801343878058,
+          "n": 8053
+        },
+        "Staten Island": {
+          "mae": 11.59755891200227,
+          "n": 48
+        }
+      },
+      "coverage": 0.76793,
+      "signals": {
+        "drift_share": 0.25,
+        "pred_wasserstein": 0.5803372638270777,
+        "volume_ratio": 0.20013767966020876
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": false,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2020-12": {
+      "mae": 3.630372779997071,
+      "rmse": 5.464217451569871,
+      "median_ape": 0.2642930948030482,
+      "n": 200000,
+      "cleaned_n": 1420012,
+      "baseline_mae": 3.7482745,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.285677173727735,
+          "n": 2003
+        },
+        "Brooklyn": {
+          "mae": 6.012557696725769,
+          "n": 3823
+        },
+        "Manhattan": {
+          "mae": 3.4278655747411957,
+          "n": 185853
+        },
+        "Queens": {
+          "mae": 6.378616826510264,
+          "n": 8268
+        },
+        "Staten Island": {
+          "mae": 12.845886073447343,
+          "n": 53
+        }
+      },
+      "coverage": 0.7502,
+      "signals": {
+        "drift_share": 0.25,
+        "pred_wasserstein": 0.6849519532142598,
+        "volume_ratio": 0.19369571471972347
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-01": {
+      "mae": 3.8200102376958482,
+      "rmse": 5.495504233653877,
+      "median_ape": 0.3036960407447209,
+      "n": 200000,
+      "cleaned_n": 1328650,
+      "baseline_mae": 3.645289083333333,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.4402748119400215,
+          "n": 2225
+        },
+        "Brooklyn": {
+          "mae": 5.798347575779734,
+          "n": 4196
+        },
+        "EWR": {
+          "mae": 0.6541048509717946,
+          "n": 1
+        },
+        "Manhattan": {
+          "mae": 3.5725067400185195,
+          "n": 182909
+        },
+        "Queens": {
+          "mae": 6.709598300382865,
+          "n": 10620
+        },
+        "Staten Island": {
+          "mae": 13.109107952388687,
+          "n": 49
+        }
+      },
+      "coverage": 0.71595,
+      "signals": {
+        "drift_share": 0.25,
+        "pred_wasserstein": 0.8784336487059965,
+        "volume_ratio": 0.18123354687309726
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-02": {
+      "mae": 3.664085494272852,
+      "rmse": 5.515806653444499,
+      "median_ape": 0.26819546438696895,
+      "n": 200000,
+      "cleaned_n": 1328203,
+      "baseline_mae": 3.836214583333333,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.620920500843335,
+          "n": 1851
+        },
+        "Brooklyn": {
+          "mae": 6.322628224519804,
+          "n": 3847
+        },
+        "Manhattan": {
+          "mae": 3.4612941001130886,
+          "n": 185515
+        },
+        "Queens": {
+          "mae": 6.105053342259765,
+          "n": 8742
+        },
+        "Staten Island": {
+          "mae": 16.583842828161856,
+          "n": 45
+        }
+      },
+      "coverage": 0.74966,
+      "signals": {
+        "drift_share": 0.25,
+        "pred_wasserstein": 0.8425333506036585,
+        "volume_ratio": 0.1811725741598528
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-03": {
+      "mae": 3.574404093248048,
+      "rmse": 5.231036870807723,
+      "median_ape": 0.2678442036753611,
+      "n": 200000,
+      "cleaned_n": 1870013,
+      "baseline_mae": 3.6711048749999997,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.597963740911536,
+          "n": 1829
+        },
+        "Brooklyn": {
+          "mae": 5.739726468136467,
+          "n": 3745
+        },
+        "Manhattan": {
+          "mae": 3.3784871100601133,
+          "n": 185267
+        },
+        "Queens": {
+          "mae": 6.005795498968932,
+          "n": 9122
+        },
+        "Staten Island": {
+          "mae": 16.508902248905375,
+          "n": 37
+        }
+      },
+      "coverage": 0.755245,
+      "signals": {
+        "drift_share": 0.3333333333333333,
+        "pred_wasserstein": 1.0225981426774196,
+        "volume_ratio": 0.25507777720904773
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-04": {
+      "mae": 3.5642626327293443,
+      "rmse": 5.215213694647198,
+      "median_ape": 0.25139136111975924,
+      "n": 200000,
+      "cleaned_n": 2112932,
+      "baseline_mae": 3.86511875,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 6.24811490564842,
+          "n": 1608
+        },
+        "Brooklyn": {
+          "mae": 6.141514761277745,
+          "n": 3401
+        },
+        "EWR": {
+          "mae": 25.102806574644234,
+          "n": 2
+        },
+        "Manhattan": {
+          "mae": 3.3530886069282477,
+          "n": 184421
+        },
+        "Queens": {
+          "mae": 5.979024134883116,
+          "n": 10542
+        },
+        "Staten Island": {
+          "mae": 17.58592511842073,
+          "n": 26
+        }
+      },
+      "coverage": 0.7705,
+      "signals": {
+        "drift_share": 0.25,
+        "pred_wasserstein": 1.3687767884332738,
+        "volume_ratio": 0.28821296854827616
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-05": {
+      "mae": 3.388333461629383,
+      "rmse": 5.053290019943522,
+      "median_ape": 0.23165113929519895,
+      "n": 200000,
+      "cleaned_n": 2443280,
+      "baseline_mae": 3.91340575,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 7.1017499255956595,
+          "n": 1065
+        },
+        "Brooklyn": {
+          "mae": 5.562489363165479,
+          "n": 2703
+        },
+        "EWR": {
+          "mae": 5.710585100813289,
+          "n": 2
+        },
+        "Manhattan": {
+          "mae": 3.190555083816839,
+          "n": 184354
+        },
+        "Queens": {
+          "mae": 5.610358193023548,
+          "n": 11852
+        },
+        "Staten Island": {
+          "mae": 15.455896274773265,
+          "n": 24
+        }
+      },
+      "coverage": 0.795765,
+      "signals": {
+        "drift_share": 0.08333333333333333,
+        "pred_wasserstein": 1.2118703946493037,
+        "volume_ratio": 0.33327384970014756
+      },
+      "signal_alarms": {
+        "drift_share": false,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-06": {
+      "mae": 3.468405774549502,
+      "rmse": 5.410904701598172,
+      "median_ape": 0.22159637536874285,
+      "n": 200000,
+      "cleaned_n": 2763358,
+      "baseline_mae": 4.062954125,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 7.7151802637934725,
+          "n": 696
+        },
+        "Brooklyn": {
+          "mae": 5.955169342118941,
+          "n": 2344
+        },
+        "Manhattan": {
+          "mae": 3.275186152090192,
+          "n": 184765
+        },
+        "Queens": {
+          "mae": 5.6573762521895805,
+          "n": 12180
+        },
+        "Staten Island": {
+          "mae": 20.39069105066228,
+          "n": 15
+        }
+      },
+      "coverage": 0.80138,
+      "signals": {
+        "drift_share": 0.0,
+        "pred_wasserstein": 1.234591670645829,
+        "volume_ratio": 0.3769338588944781
+      },
+      "signal_alarms": {
+        "drift_share": false,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-07": {
+      "mae": 3.440860000696948,
+      "rmse": 5.188571202485842,
+      "median_ape": 0.22700072092709123,
+      "n": 200000,
+      "cleaned_n": 2744500,
+      "baseline_mae": 3.8409000833333335,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 7.650668970322844,
+          "n": 723
+        },
+        "Brooklyn": {
+          "mae": 5.659652610113915,
+          "n": 2168
+        },
+        "EWR": {
+          "mae": 17.55420322577295,
+          "n": 9
+        },
+        "Manhattan": {
+          "mae": 3.23965654026741,
+          "n": 182848
+        },
+        "Queens": {
+          "mae": 5.447462154137392,
+          "n": 14232
+        },
+        "Staten Island": {
+          "mae": 15.97256667941931,
+          "n": 20
+        }
+      },
+      "coverage": 0.801805,
+      "signals": {
+        "drift_share": 0.16666666666666666,
+        "pred_wasserstein": 1.80756891554193,
+        "volume_ratio": 0.3743615469786742
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-08": {
+      "mae": 3.4294441354325262,
+      "rmse": 5.057851340208531,
+      "median_ape": 0.22827067089312064,
+      "n": 200000,
+      "cleaned_n": 2708439,
+      "baseline_mae": 3.7427550416666655,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 7.715634934876056,
+          "n": 701
+        },
+        "Brooklyn": {
+          "mae": 5.326963180732413,
+          "n": 2249
+        },
+        "EWR": {
+          "mae": 0.8188078563579516,
+          "n": 3
+        },
+        "Manhattan": {
+          "mae": 3.2001399304591556,
+          "n": 181520
+        },
+        "Queens": {
+          "mae": 5.631340735374688,
+          "n": 15508
+        },
+        "Staten Island": {
+          "mae": 14.586214683378307,
+          "n": 19
+        }
+      },
+      "coverage": 0.801685,
+      "signals": {
+        "drift_share": 0.25,
+        "pred_wasserstein": 1.9814091613956206,
+        "volume_ratio": 0.36944267223077915
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-09": {
+      "mae": 3.651361262123146,
+      "rmse": 5.842133687744889,
+      "median_ape": 0.2132684569502965,
+      "n": 200000,
+      "cleaned_n": 2881495,
+      "baseline_mae": 4.401989625000001,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 8.842612855665756,
+          "n": 535
+        },
+        "Brooklyn": {
+          "mae": 6.206247220924303,
+          "n": 2024
+        },
+        "Manhattan": {
+          "mae": 3.3760390258690296,
+          "n": 182938
+        },
+        "Queens": {
+          "mae": 6.556590563303264,
+          "n": 14481
+        },
+        "Staten Island": {
+          "mae": 19.463405003369942,
+          "n": 22
+        }
+      },
+      "coverage": 0.80863,
+      "signals": {
+        "drift_share": 0.16666666666666666,
+        "pred_wasserstein": 1.8525323344008564,
+        "volume_ratio": 0.3930482513431644
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-10": {
+      "mae": 3.4436228868933085,
+      "rmse": 5.489410958926773,
+      "median_ape": 0.20191188008465372,
+      "n": 200000,
+      "cleaned_n": 3373224,
+      "baseline_mae": 4.305825249999998,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 8.549723927804397,
+          "n": 389
+        },
+        "Brooklyn": {
+          "mae": 5.8228605482191185,
+          "n": 1597
+        },
+        "EWR": {
+          "mae": 2.570770539080174,
+          "n": 2
+        },
+        "Manhattan": {
+          "mae": 3.2259592420144716,
+          "n": 184731
+        },
+        "Queens": {
+          "mae": 6.023509764351897,
+          "n": 13269
+        },
+        "Staten Island": {
+          "mae": 19.488094533427326,
+          "n": 12
+        }
+      },
+      "coverage": 0.82306,
+      "signals": {
+        "drift_share": 0.16666666666666666,
+        "pred_wasserstein": 1.3731854529399272,
+        "volume_ratio": 0.4601221916362147
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-11": {
+      "mae": 3.6336497667330327,
+      "rmse": 5.938723459615685,
+      "median_ape": 0.2072865440368123,
+      "n": 200000,
+      "cleaned_n": 3379863,
+      "baseline_mae": 4.4395438333333335,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 9.941556161224327,
+          "n": 346
+        },
+        "Brooklyn": {
+          "mae": 6.271734554710663,
+          "n": 1530
+        },
+        "EWR": {
+          "mae": 3.054395084497302,
+          "n": 2
+        },
+        "Manhattan": {
+          "mae": 3.3709889938012285,
+          "n": 183489
+        },
+        "Queens": {
+          "mae": 6.492754157728716,
+          "n": 14619
+        },
+        "Staten Island": {
+          "mae": 16.524267179772668,
+          "n": 14
+        }
+      },
+      "coverage": 0.81057,
+      "signals": {
+        "drift_share": 0.16666666666666666,
+        "pred_wasserstein": 1.3282992049349343,
+        "volume_ratio": 0.4610277796523894
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    },
+    "2021-12": {
+      "mae": 3.6416929893759113,
+      "rmse": 5.60686032675781,
+      "median_ape": 0.21365964634298948,
+      "n": 200000,
+      "cleaned_n": 3122643,
+      "baseline_mae": 4.3454763750000005,
+      "borough_mae": {
+        "Bronx": {
+          "mae": 8.702964767217907,
+          "n": 301
+        },
+        "Brooklyn": {
+          "mae": 5.712674694716681,
+          "n": 1335
+        },
+        "EWR": {
+          "mae": 14.747736379051819,
+          "n": 10
+        },
+        "Manhattan": {
+          "mae": 3.4000571117234326,
+          "n": 182828
+        },
+        "Queens": {
+          "mae": 6.19339212253999,
+          "n": 15508
+        },
+        "Staten Island": {
+          "mae": 15.130041138353992,
+          "n": 18
+        }
+      },
+      "coverage": 0.80594,
+      "signals": {
+        "drift_share": 0.16666666666666666,
+        "pred_wasserstein": 1.7218122729900642,
+        "volume_ratio": 0.4259418707021782
+      },
+      "signal_alarms": {
+        "drift_share": true,
+        "pred_wasserstein": true,
+        "volume_ratio": false
+      },
+      "degraded": false
+    }
+  },
+  "policy_summary": {
+    "static": {
+      "monthly_mae": {
+        "2019-07": 3.4592702444483097,
+        "2019-08": 3.263337655806013,
+        "2019-09": 3.7927528952325944,
+        "2019-10": 3.7140597429542304,
+        "2019-11": 3.7061275410810723,
+        "2019-12": 4.001201331896848,
+        "2020-01": 3.022671173165571,
+        "2020-02": 3.0100856828738136,
+        "2020-03": 3.29591245775493,
+        "2020-04": 5.311892481795189,
+        "2020-05": 5.054548210338038,
+        "2020-06": 4.400694115526444,
+        "2020-07": 4.152373563383666,
+        "2020-08": 3.9239245147547863,
+        "2020-09": 3.6395789141651975,
+        "2020-10": 3.483346248065344,
+        "2020-11": 3.455265532693061,
+        "2020-12": 3.630372779997071,
+        "2021-01": 3.8200102376958482,
+        "2021-02": 3.664085494272852,
+        "2021-03": 3.574404093248048,
+        "2021-04": 3.5642626327293443,
+        "2021-05": 3.388333461629383,
+        "2021-06": 3.468405774549502,
+        "2021-07": 3.440860000696948,
+        "2021-08": 3.4294441354325262,
+        "2021-09": 3.651361262123146,
+        "2021-10": 3.4436228868933085,
+        "2021-11": 3.6336497667330327,
+        "2021-12": 3.6416929893759113
+      },
+      "mean_mae": 3.7012515940437343,
+      "n_retrains": 0,
+      "retrain_months": []
+    },
+    "monthly": {
+      "monthly_mae": {
+        "2019-07": 3.452847069321005,
+        "2019-08": 3.312536910451996,
+        "2019-09": 3.761212281942895,
+        "2019-10": 3.675667855379251,
+        "2019-11": 3.6059945659253776,
+        "2019-12": 3.8115393395671813,
+        "2020-01": 3.4482672925372877,
+        "2020-02": 3.116309878385241,
+        "2020-03": 3.318343484231282,
+        "2020-04": 4.733756280602626,
+        "2020-05": 3.191777923400079,
+        "2020-06": 3.037057621436189,
+        "2020-07": 3.077738614108371,
+        "2020-08": 2.953335507899709,
+        "2020-09": 2.947077575460755,
+        "2020-10": 2.9891689332113116,
+        "2020-11": 2.8778585310503044,
+        "2020-12": 2.984663497175633,
+        "2021-01": 2.7317019127271958,
+        "2021-02": 2.8652979510011916,
+        "2021-03": 2.6803101594287697,
+        "2021-04": 2.9065132121896533,
+        "2021-05": 2.952271967644196,
+        "2021-06": 3.2342828773050103,
+        "2021-07": 2.9812301727682935,
+        "2021-08": 2.8707361623882224,
+        "2021-09": 3.587193582738621,
+        "2021-10": 3.5249986275349072,
+        "2021-11": 3.607365351906602,
+        "2021-12": 3.608827636982138
+      },
+      "mean_mae": 3.261529425890044,
+      "n_retrains": 30,
+      "retrain_months": [
+        "2019-07",
+        "2019-08",
+        "2019-09",
+        "2019-10",
+        "2019-11",
+        "2019-12",
+        "2020-01",
+        "2020-02",
+        "2020-03",
+        "2020-04",
+        "2020-05",
+        "2020-06",
+        "2020-07",
+        "2020-08",
+        "2020-09",
+        "2020-10",
+        "2020-11",
+        "2020-12",
+        "2021-01",
+        "2021-02",
+        "2021-03",
+        "2021-04",
+        "2021-05",
+        "2021-06",
+        "2021-07",
+        "2021-08",
+        "2021-09",
+        "2021-10",
+        "2021-11",
+        "2021-12"
+      ]
+    },
+    "drift": {
+      "monthly_mae": {
+        "2019-07": 3.4592702444483097,
+        "2019-08": 3.312536910451996,
+        "2019-09": 3.761212281942895,
+        "2019-10": 3.714278724766383,
+        "2019-11": 3.708851336556824,
+        "2019-12": 3.934373552437655,
+        "2020-01": 3.246254020927011,
+        "2020-02": 3.1597360805055823,
+        "2020-03": 3.464443436437615,
+        "2020-04": 5.478340330116784,
+        "2020-05": 3.191777923400079,
+        "2020-06": 3.037057621436189,
+        "2020-07": 3.077738614108371,
+        "2020-08": 2.953335507899709,
+        "2020-09": 2.947077575460755,
+        "2020-10": 2.9891689332113116,
+        "2020-11": 2.8778585310503044,
+        "2020-12": 2.984663497175633,
+        "2021-01": 2.7317019127271958,
+        "2021-02": 2.8652979510011916,
+        "2021-03": 2.6803101594287697,
+        "2021-04": 2.9065132121896533,
+        "2021-05": 2.952271967644196,
+        "2021-06": 3.2342828773050103,
+        "2021-07": 2.9812301727682935,
+        "2021-08": 2.8707361623882224,
+        "2021-09": 3.587193582738621,
+        "2021-10": 3.5249986275349072,
+        "2021-11": 3.607365351906602,
+        "2021-12": 3.608827636982138
+      },
+      "mean_mae": 3.2949568245649408,
+      "n_retrains": 22,
+      "retrain_months": [
+        "2019-08",
+        "2019-09",
+        "2020-05",
+        "2020-06",
+        "2020-07",
+        "2020-08",
+        "2020-09",
+        "2020-10",
+        "2020-11",
+        "2020-12",
+        "2021-01",
+        "2021-02",
+        "2021-03",
+        "2021-04",
+        "2021-05",
+        "2021-06",
+        "2021-07",
+        "2021-08",
+        "2021-09",
+        "2021-10",
+        "2021-11",
+        "2021-12"
+      ]
+    }
+  },
+  "bootstrap": {
+    "method": "days resampled within each month, same draw for all policies; conditional on the trained models",
+    "n_boot": 1000,
+    "seed": 0,
+    "policies": {
+      "drift": {
+        "point": 3.2949568245649408,
+        "boot_mean": 3.2949244830842312,
+        "ci_low": 3.2694532458700003,
+        "ci_high": 3.320757762622868
+      },
+      "monthly": {
+        "point": 3.261529425890044,
+        "boot_mean": 3.2615622968272584,
+        "ci_low": 3.238406292291792,
+        "ci_high": 3.2865909656051997
+      },
+      "static": {
+        "point": 3.7012515940437343,
+        "boot_mean": 3.7014944387838256,
+        "ci_low": 3.675176882358841,
+        "ci_high": 3.729568615182048
+      }
+    },
+    "diffs": {
+      "monthly-static": {
+        "point": -0.43972216815369025,
+        "boot_mean": -0.4399321419565673,
+        "ci_low": -0.4560251532817975,
+        "ci_high": -0.42323897253867276,
+        "share_below_zero": 1.0
+      },
+      "drift-static": {
+        "point": -0.4062947694787935,
+        "boot_mean": -0.4065699556995944,
+        "ci_low": -0.42243306698999666,
+        "ci_high": -0.39049274545971224,
+        "share_below_zero": 1.0
+      },
+      "drift-monthly": {
+        "point": 0.03342739867489675,
+        "boot_mean": 0.03336218625697301,
+        "ci_low": 0.02758197004494156,
+        "ci_high": 0.03895887727376461,
+        "share_below_zero": 0.0
+      }
+    },
+    "static_monthly_ci": {
+      "2019-07": {
+        "point": 3.4592702444483097,
+        "ci_low": 3.2983235467852277,
+        "ci_high": 3.604898358855998
+      },
+      "2019-08": {
+        "point": 3.263337655806013,
+        "ci_low": 3.1661141508225183,
+        "ci_high": 3.3530470605888527
+      },
+      "2019-09": {
+        "point": 3.7927528952325944,
+        "ci_low": 3.556829169043479,
+        "ci_high": 4.037629505439051
+      },
+      "2019-10": {
+        "point": 3.7140597429542304,
+        "ci_low": 3.556604304467958,
+        "ci_high": 3.8824308529659377
+      },
+      "2019-11": {
+        "point": 3.7061275410810723,
+        "ci_low": 3.544053387133367,
+        "ci_high": 3.8815182105036756
+      },
+      "2019-12": {
+        "point": 4.001201331896848,
+        "ci_low": 3.830289627008262,
+        "ci_high": 4.194502236782925
+      },
+      "2020-01": {
+        "point": 3.022671173165571,
+        "ci_low": 2.933259807433001,
+        "ci_high": 3.1138268098286277
+      },
+      "2020-02": {
+        "point": 3.0100856828738136,
+        "ci_low": 2.9017479848442425,
+        "ci_high": 3.110889775731353
+      },
+      "2020-03": {
+        "point": 3.29591245775493,
+        "ci_low": 3.1358064055795607,
+        "ci_high": 3.519463900504192
+      },
+      "2020-04": {
+        "point": 5.311892481795189,
+        "ci_low": 5.051285143989718,
+        "ci_high": 5.529745639085895
+      },
+      "2020-05": {
+        "point": 5.054548210338038,
+        "ci_low": 4.795364815028496,
+        "ci_high": 5.291123394032883
+      },
+      "2020-06": {
+        "point": 4.400694115526444,
+        "ci_low": 4.244099358464332,
+        "ci_high": 4.555089435453612
+      },
+      "2020-07": {
+        "point": 4.152373563383666,
+        "ci_low": 4.033106890799241,
+        "ci_high": 4.266436934987021
+      },
+      "2020-08": {
+        "point": 3.9239245147547863,
+        "ci_low": 3.8069402596915216,
+        "ci_high": 4.026581844409307
+      },
+      "2020-09": {
+        "point": 3.6395789141651975,
+        "ci_low": 3.5260414377595533,
+        "ci_high": 3.7394844561548917
+      },
+      "2020-10": {
+        "point": 3.483346248065344,
+        "ci_low": 3.368541655063582,
+        "ci_high": 3.589011105145836
+      },
+      "2020-11": {
+        "point": 3.455265532693061,
+        "ci_low": 3.3286857426488226,
+        "ci_high": 3.584979757963206
+      },
+      "2020-12": {
+        "point": 3.630372779997071,
+        "ci_low": 3.48595716151748,
+        "ci_high": 3.781657814291971
+      },
+      "2021-01": {
+        "point": 3.8200102376958482,
+        "ci_low": 3.6566077079605943,
+        "ci_high": 3.970955755201164
+      },
+      "2021-02": {
+        "point": 3.664085494272852,
+        "ci_low": 3.4913644196914553,
+        "ci_high": 3.8190888362226203
+      },
+      "2021-03": {
+        "point": 3.574404093248048,
+        "ci_low": 3.459474551754229,
+        "ci_high": 3.678649357745754
+      },
+      "2021-04": {
+        "point": 3.5642626327293443,
+        "ci_low": 3.444249823792922,
+        "ci_high": 3.6709134381004187
+      },
+      "2021-05": {
+        "point": 3.388333461629383,
+        "ci_low": 3.2554956911943402,
+        "ci_high": 3.5112992133378045
+      },
+      "2021-06": {
+        "point": 3.468405774549502,
+        "ci_low": 3.3129821545688753,
+        "ci_high": 3.6485974141066024
+      },
+      "2021-07": {
+        "point": 3.440860000696948,
+        "ci_low": 3.3308524786716203,
+        "ci_high": 3.546779767879517
+      },
+      "2021-08": {
+        "point": 3.4294441354325262,
+        "ci_low": 3.3299136163976955,
+        "ci_high": 3.523738567963283
+      },
+      "2021-09": {
+        "point": 3.651361262123146,
+        "ci_low": 3.4748024933924344,
+        "ci_high": 3.809391422412702
+      },
+      "2021-10": {
+        "point": 3.4436228868933085,
+        "ci_low": 3.3290753164981717,
+        "ci_high": 3.549956610240013
+      },
+      "2021-11": {
+        "point": 3.6336497667330327,
+        "ci_low": 3.464623638505695,
+        "ci_high": 3.8535089771313027
+      },
+      "2021-12": {
+        "point": 3.6416929893759113,
+        "ci_low": 3.5419951534655016,
+        "ci_high": 3.7468938984049918
+      }
+    }
+  },
+  "shap": {
+    "n_per_group": 20000,
+    "pre_covid": {
+      "mean_abs_shap": {
+        "pu_zone": 0.05460964758160494,
+        "do_zone": 0.0769898475783691,
+        "pu_borough": 0.00044356636716323574,
+        "do_borough": 0.0007071030553479714,
+        "same_zone": 0.0010820604105660897,
+        "pu_airport": 0.0010388852696065788,
+        "do_airport": 0.00014188699490984134,
+        "haversine_km": 0.09225563058526218,
+        "road_km": 0.39397488634788963,
+        "pickup_hour": 0.11292380953933576,
+        "pickup_dow": 0.054683926208265995,
+        "is_holiday": 0.006134044120391931
+      }
+    },
+    "covid_2020_04": {
+      "mean_abs_shap": {
+        "pu_zone": 0.06057300149526565,
+        "do_zone": 0.08747470468935348,
+        "pu_borough": 0.0005919203621558617,
+        "do_borough": 0.0008739493483131493,
+        "same_zone": 0.0010981918925376884,
+        "pu_airport": 0.0011080491971839225,
+        "do_airport": 0.00013638112111183216,
+        "haversine_km": 0.0919943955573586,
+        "road_km": 0.40751081325843813,
+        "pickup_hour": 0.11251374449592001,
+        "pickup_dow": 0.054041248190170914,
+        "is_holiday": 0.0034615937844291794
+      }
+    }
+  },
+  "served_model": {
+    "bundle": "/tmp/nyc_eta_work/model_bundle",
+    "trained_months": [
+      "2021-10",
+      "2021-11",
+      "2021-12"
+    ],
+    "n_train": 480000,
+    "n_holdout": 120000,
+    "best_iteration": 462,
+    "conformal_q": 0.3725125820074022,
+    "holdout_coverage": 0.8000166666666667,
+    "clean_counts": {
+      "reused_deploy_frames": true
+    }
+  },
+  "sample_per_month": 200000,
+  "web_export": {
+    "caps": {
+      "pre_day_trips": 4000
+    },
+    "seeds": {
+      "subset": 0
+    },
+    "tolerances": {
+      "route_simplify": 5e-05,
+      "zone_simplify": 0.0001
+    },
+    "coordinate_decimals": 5,
+    "demo_days": {
+      "pre": "2019-10-01",
+      "covid": "2020-04-07"
+    },
+    "files": {
+      "zones.geojson": 370470,
+      "drift.json": 11619,
+      "trips.json": 320334,
+      "routes.json": 627656
+    }
+  }
+}

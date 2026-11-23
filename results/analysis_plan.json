@@ -1,0 +1,142 @@
+{
+  "protocol": "nyc-taxi-eta-v1",
+  "git_sha": "e18c996af238f19b1a595e763b64a8f383a8f2c9",
+  "smoke": false,
+  "sample_per_month": 200000,
+  "train_months": [
+    "2019-01",
+    "2019-02",
+    "2019-03",
+    "2019-04"
+  ],
+  "validation_months": [
+    "2019-05",
+    "2019-06"
+  ],
+  "deploy_months": [
+    "2019-07",
+    "2019-08",
+    "2019-09",
+    "2019-10",
+    "2019-11",
+    "2019-12",
+    "2020-01",
+    "2020-02",
+    "2020-03",
+    "2020-04",
+    "2020-05",
+    "2020-06",
+    "2020-07",
+    "2020-08",
+    "2020-09",
+    "2020-10",
+    "2020-11",
+    "2020-12",
+    "2021-01",
+    "2021-02",
+    "2021-03",
+    "2021-04",
+    "2021-05",
+    "2021-06",
+    "2021-07",
+    "2021-08",
+    "2021-09",
+    "2021-10",
+    "2021-11",
+    "2021-12"
+  ],
+  "model_grid": [
+    {
+      "num_leaves": 63,
+      "min_data_in_leaf": 50,
+      "best_iteration": 1535,
+      "cap_bound": false,
+      "val_mae": 3.6670945750976047
+    },
+    {
+      "num_leaves": 63,
+      "min_data_in_leaf": 500,
+      "best_iteration": 1353,
+      "cap_bound": false,
+      "val_mae": 3.6656181162253723
+    },
+    {
+      "num_leaves": 255,
+      "min_data_in_leaf": 50,
+      "best_iteration": 509,
+      "cap_bound": false,
+      "val_mae": 3.6613630436088167
+    },
+    {
+      "num_leaves": 255,
+      "min_data_in_leaf": 500,
+      "best_iteration": 462,
+      "cap_bound": false,
+      "val_mae": 3.6609312998516548
+    }
+  ],
+  "selected": {
+    "num_leaves": 255,
+    "min_data_in_leaf": 500,
+    "best_iteration": 462,
+    "cap_bound": false,
+    "val_mae": 3.6609312998516548
+  },
+  "conformal": {
+    "alpha": 0.2,
+    "q": 0.4014218616234373,
+    "val_coverage": 0.800005
+  },
+  "baseline_val_mae": 4.6231579375,
+  "val_borough_slices": {
+    "Bronx": {
+      "mae": 6.478187803821575,
+      "n": 788
+    },
+    "Brooklyn": {
+      "mae": 4.561465464896964,
+      "n": 5118
+    },
+    "EWR": {
+      "mae": 1.614371704991351,
+      "n": 7
+    },
+    "Manhattan": {
+      "mae": 3.389063161741464,
+      "n": 366079
+    },
+    "Queens": {
+      "mae": 6.966160121674123,
+      "n": 27990
+    },
+    "Staten Island": {
+      "mae": 14.619561508938448,
+      "n": 18
+    }
+  },
+  "drift_thresholds": {
+    "drift_share": 0.08333333333333333,
+    "pred_wasserstein": 0.6322591465597522,
+    "volume_ratio": 1.01249377953856
+  },
+  "volume_ref_monthly_mean": 7331148.25,
+  "val_signals": [
+    {
+      "month": "2019-05",
+      "drift_share": 0.0,
+      "pred_wasserstein": 0.6244859651010104,
+      "volume_ratio": 1.01249377953856,
+      "cleaned_n": 7422742,
+      "sample_n": 200000
+    },
+    {
+      "month": "2019-06",
+      "drift_share": 0.08333333333333333,
+      "pred_wasserstein": 0.6322591465597522,
+      "volume_ratio": 0.9280548923560508,
+      "cleaned_n": 6803708,
+      "sample_n": 200000
+    }
+  ],
+  "card_write_epoch": 1795471046.2483158
+}
