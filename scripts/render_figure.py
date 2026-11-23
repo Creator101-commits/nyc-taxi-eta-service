@@ -54,15 +54,12 @@ ax.text(covid_i - 0.45, ax.get_ylim()[1] if False else max(DATA["static_mae"]) *
         "COVID", fontsize=8, color="#c8d3e8")
 rt = [MONTHS.index(m) for m in DATA["retrain_months"]]
 ax.plot(rt, [min(DATA["monthly_mae"]) - 0.12] * len(rt), "|",
-        color=COL_DRIFT, ms=8, mew=1.6)
-ax.text(len(MONTHS) - 0.5, min(DATA["monthly_mae"]) - 0.12,
-        "drift retrains", fontsize=7.5, color=COL_DRIFT, ha="right",
-        va="top")
+        color=COL_DRIFT, ms=8, mew=1.6, label="drift retrain")
 ax.set_xticks(xticks := XTICKS)
 ax.set_xticklabels(XLABELS, rotation=45, ha="right", fontsize=8)
 ax.set_ylabel("MAE (minutes)")
 ax.set_title("Monthly MAE by retraining policy", fontsize=11)
-ax.legend(fontsize=8, loc="upper left")
+ax.legend(fontsize=8, loc="upper right")
 ax.grid(alpha=0.15)
 
 # (b) forest plot --------------------------------------------------------
@@ -100,7 +97,8 @@ ax.set_xticks(np.arange(3))
 ax.set_xticklabels(["lag -1", "lag 0", "lag +1"], fontsize=9)
 ax.set_ylim(-1, 1)
 ax.set_ylabel("Spearman vs static MAE ratio")
-ax.set_title("Signal lead/lag (n=30 months, no CIs)", fontsize=11)
+ax.set_title("Signal lead/lag (n = 30 months, 29 at lags of 1, no CIs)",
+             fontsize=11)
 ax.legend(fontsize=8)
 ax.grid(alpha=0.15, axis="y")
 
@@ -108,7 +106,7 @@ ax.grid(alpha=0.15, axis="y")
 ax = axes[1, 1]
 ax.plot(X, DATA["coverage"], color=COL_MONTHLY, lw=1.6)
 ax.axhline(0.80, color=COL_CUT, ls="--", lw=1.0, label="0.80 target")
-ax.axhline(0.75, color=COL_BASE, ls=":", lw=0.8)
+ax.axhline(0.75, color=COL_BASE, ls=":", lw=0.8, label="0.75")
 ax.set_xticks(XTICKS)
 ax.set_xticklabels(XLABELS, rotation=45, ha="right", fontsize=8)
 ax.set_ylim(0, 1)
