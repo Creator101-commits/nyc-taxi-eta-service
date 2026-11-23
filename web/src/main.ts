@@ -198,6 +198,8 @@ function tripLayerProps(records: TripRecord[], currentTime: number) {
     opacity: 0.95,
     trailLength: 0.15,
     currentTime,
+    pickable: true,
+    widthMinPixels: 2,
   };
 }
 
