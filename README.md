@@ -63,7 +63,7 @@ or build them first (see Installation).
 ## Installation
 
 ```bash
-git clone <repo> && cd nyc-taxi-eta-service
+git clone https://github.com/Creator101-commits/nyc-taxi-eta-service.git && cd nyc-taxi-eta-service
 uv sync                      # Python 3.12-3.13
 cd web && npm ci && npm run build && cd ..
 ```
@@ -193,10 +193,10 @@ Protocol `nyc-taxi-eta-v1`, frozen in `src/nyc_eta/config.py`:
 
 ## Results
 
-Primary run: **v1.1 at `e18c996`**, `artifacts/kaggle/20261123-154018`
-(lead-verified): `ordering_ok` true, card-write epoch before the first
-deployment read, 4,100 s on Kaggle CPU, 17 MB output with no parquet.
-As-run run: v1 at `1cb0f4d` (`results/v1_as_run/`).
+Primary run: **v1.1 at `e18c996`** (provenance in
+`results/manifest.json`): `ordering_ok` true, card-write epoch before
+the first deployment read, 4,100 s on Kaggle CPU, 17 MB output with no
+parquet. As-run run: v1 at `1cb0f4d` (`results/v1_as_run/`).
 
 Selected config (validation only): `num_leaves=255`,
 `min_data_in_leaf=500`, `best_iteration=462`, `cap_bound=false`,
@@ -225,7 +225,7 @@ recall 1.0. The alarms stayed on for 20 straight months after the
 static model's error had recovered.
 
 **Spearman vs static MAE ratio** (lags -1/0/+1; +1 = signal leads
-overror; n = 30 months, 29 for lags; no CIs computed):
+error; n = 30 months, 29 for lags; no CIs computed):
 
 | signal | lag -1 | lag 0 | lag +1 |
 |---|---|---|---|
@@ -248,6 +248,13 @@ conformal quantile from a 120,000-row holdout, holdout coverage 0.800.
 Validation borough slices are heavily skewed: Manhattan 366,079 of
 about 400,000 rows (MAE 3.39); Queens 6.97; Bronx 6.48; Brooklyn 4.56;
 Staten Island 14.6 (n 18); EWR 1.6 (n 7).
+
+**SHAP attribution check** (`results/shap_importance.json`; mean |SHAP|
+on log1p minutes, 20,000 rows per group, pre-COVID vs 2020-04):
+road_km 0.394 vs 0.408, pickup_hour 0.113 vs 0.113, haversine_km 0.092
+vs 0.092, do_zone 0.077 vs 0.087, pu_zone 0.055 vs 0.061, pickup_dow
+0.055 vs 0.054. The static model's attributions barely moved, so
+attribution drift would not have flagged the April 2020 error either.
 
 **v1 as-run disclosure:** v1 (`1cb0f4d`) ran the same frozen protocol;
 v1.1 (`e18c996`) added the paired policy bootstrap, borough and
@@ -307,8 +314,11 @@ cd web && npm ci && npm run typecheck && npm test && npm run build
 
 CI (`.github/workflows/ci.yml`) runs the Python job on 3.12 and 3.13 on
 ubuntu and macOS (libomp installed on macOS), the web job (npm ci,
-typecheck, vitest, build) and the Docker job (image build plus `/health`
-and one `/predict` smoke with the committed bundle).
+typecheck, vitest, build, then a Playwright e2e smoke that loads the
+preview build, asserts a clean console and that the taxi animation
+advances via `window.__nyc`, and uploads a screenshot) and the Docker
+job (image build plus `/health` and one `/predict` smoke with the
+committed bundle).
 
 ## Limitations
 
