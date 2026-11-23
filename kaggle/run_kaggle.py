@@ -22,7 +22,10 @@ from pathlib import Path
 KAGGLE_INPUT = Path("/kaggle/input")
 WORK = Path("/kaggle/working")
 BENCH = WORK / "benchmark"
-WORK_DIR = WORK / "nyc_eta_work"
+# Intermediates (raw downloads, work frames, project copy) live in /tmp so
+# the kernel output is only benchmark/ plus the log.
+WORK_DIR = Path("/tmp/nyc_eta_work")
+PROJ_DIR = Path("/tmp/nyc_eta_project")
 
 # Kernel-only dependencies, pinned to releases >= 7 days old.
 KERNEL_DEPS = [
@@ -55,7 +58,7 @@ def _install_package() -> Path:
             "No installable project found under /kaggle/input "
             "(expected pyproject.toml + src/nyc_eta)."
         )
-    proj = WORK / "project"
+    proj = PROJ_DIR
     shutil.copytree(proj_root, proj)
     _run([sys.executable, "-m", "pip", "install", "--quiet", str(proj)])
     if KERNEL_DEPS:

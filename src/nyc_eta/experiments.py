@@ -79,6 +79,9 @@ def _download_months(
         sampled, cnt = data.month_frame(dest, month, sample_n)
         counts[month] = cnt
         frames[month] = sampled.to_pandas()
+        # sha256 is already recorded in ``rec``; the raw file is not
+        # needed again, so delete it to keep the work dir small.
+        dest.unlink(missing_ok=True)
     return frames, counts
 
 
