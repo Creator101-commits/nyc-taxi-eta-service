@@ -9,9 +9,21 @@ declare global {
 test("map loads, taxis animate, and the console stays clean", async ({
   page,
 }) => {
+  // A static preview has no API, so the live-prediction call returns 404
+  // by design; any other failed response or console error fails the test.
+  const apiPaths = ["/predict", "/zones", "/health", "/ready", "/model-info"];
+  const failed: string[] = [];
+  page.on("response", (res) => {
+    const path = new URL(res.url()).pathname;
+    if (res.status() >= 400 && !apiPaths.some((p) => path.endsWith(p))) {
+      failed.push(`${res.status()} ${res.url()}`);
+    }
+  });
   const errors: string[] = [];
   page.on("console", (msg) => {
-    if (msg.type() === "error") errors.push(msg.text());
+    if (msg.type() === "error" && !msg.text().startsWith("Failed to load resource")) {
+      errors.push(msg.text());
+    }
   });
   page.on("pageerror", (err) => errors.push(String(err)));
 
@@ -35,5 +47,6 @@ test("map loads, taxis animate, and the console stays clean", async ({
     fullPage: true,
   });
 
+  expect(failed).toEqual([]);
   expect(errors).toEqual([]);
 });
