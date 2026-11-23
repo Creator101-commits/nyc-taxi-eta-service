@@ -734,6 +734,9 @@ def _simplify_route_coords(
     """shapely simplify for one route polyline; keeps endpoints."""
     from shapely.geometry import LineString  # noqa: PLC0415
 
+    # A one-point path (e.g. same-node pair) is not a valid LineString.
+    if len(coords) < 2:
+        return _round_coords(coords, config.WEB_COORD_DECIMALS)
     line = LineString(coords)
     simp = line.simplify(
         config.WEB_ROUTE_SIMPLIFY_TOL, preserve_topology=True

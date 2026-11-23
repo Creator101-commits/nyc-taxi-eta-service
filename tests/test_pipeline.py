@@ -180,10 +180,15 @@ class TestWebExport:
 
         def stub_routes(pairs):
             calls.append(set(pairs))
-            return {
-                f"{a}>{b}": [[-74.0, 40.7], [-73.9, 40.8], [-73.8, 40.9]]
-                for a, b in pairs
-            }
+            out = {}
+            for a, b in pairs:
+                if (a, b) == (2, 1):
+                    out[f"{a}>{b}"] = [[-74.0, 40.7]]  # degenerate path
+                else:
+                    out[f"{a}>{b}"] = [
+                        [-74.0, 40.7], [-73.9, 40.8], [-73.8, 40.9],
+                    ]
+            return out
 
         zones_geojson = {
             "type": "FeatureCollection",
@@ -241,7 +246,9 @@ class TestWebExport:
         assert calls == [{(1, 2), (2, 1)}]
         routes = json.loads((web / "routes.json").read_text())
         assert set(routes) == {"1>2", "2>1"}
-        assert all(len(c) >= 2 for c in routes.values())
+        # degenerate one-point routes pass through rounded, unsimplified
+        assert routes["2>1"] == [[-74.0, 40.7]]
+        assert len(routes["1>2"]) >= 2
 
         drift_json = json.loads((web / "drift.json").read_text())
         assert drift_json["val_mae"] == 4.0
