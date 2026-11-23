@@ -32,6 +32,14 @@ export function formatDayDate(iso: string): string {
   return `${wd}, ${months[m - 1]} ${d} ${y}`;
 }
 
+/** Animation clock: LOOP_MS maps to one day, so t -> "HH:MM". */
+export function formatClock(t: number, loopMs = 120_000): string {
+  const mins = Math.floor(((t % loopMs) / loopMs) * 1440) % 1440;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
 /** "2019-10" -> "Oct 2019". */
 export function formatMonth(ym: string): string {
   const [y, m] = ym.split("-").map(Number);

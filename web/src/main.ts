@@ -13,7 +13,7 @@ import {
 import { LOOP_MS, buildTripRecords, type TripRecord } from "./trips";
 import { buildDriftChart, renderDriftChartSvg } from "./driftchart";
 import { predictionOverlay } from "./prediction";
-import { formatDayDate, formatMinutes } from "./format";
+import { formatClock, formatDayDate, formatMinutes } from "./format";
 
 const DARK_STYLE: maplibregl.StyleSpecification = {
   version: 8,
@@ -110,7 +110,10 @@ async function tryLivePrediction(
         pickup_datetime: new Date().toISOString(),
       }),
     });
-    if (!res.ok) return;
+    if (!res.ok) {
+      showPredictionFallback(card, body);
+      return;
+    }
     const data = (await res.json()) as {
       minutes: number;
       interval_80: { low: number; high: number };
@@ -124,8 +127,15 @@ async function tryLivePrediction(
     card.hidden = false;
     addPredictionOverlay(map, zones);
   } catch {
-    // Static site without the API: leave the card hidden.
+    showPredictionFallback(card, body);
   }
+}
+
+function showPredictionFallback(card: HTMLElement, body: HTMLElement): void {
+  body.innerHTML =
+    '<div class="note">Live predictions need the API: run the Docker ' +
+    "image or uvicorn; see README.</div>";
+  card.hidden = false;
 }
 
 function renderDrift(drift: SiteData["drift"]): void {
@@ -283,9 +293,32 @@ async function main(): Promise<void> {
     });
     map.addControl(overlay as unknown as maplibregl.IControl);
 
-    let start = performance.now();
+    // Play/pause + clock. prefers-reduced-motion starts paused on one
+    // static frame; the button is always available.
+    const clockEl = document.getElementById("clock");
+    const playBtn = document.getElementById("play-pause");
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    let playing = !reduced;
+    let frozenT = 0;
+
+    const syncPlayBtn = () => {
+      if (playBtn) playBtn.textContent = playing ? "Pause" : "Play";
+    };
+    syncPlayBtn();
+    playBtn?.addEventListener("click", () => {
+      playing = !playing;
+      if (playing) start = performance.now() - frozenT;
+      syncPlayBtn();
+    });
+
+    let start = performance.now() - frozenT;
     const tick = () => {
-      const t = (performance.now() - start) % LOOP_MS;
+      const now = performance.now();
+      const t = playing ? (now - start) % LOOP_MS : frozenT;
+      if (playing) frozenT = t;
+      if (clockEl) clockEl.textContent = formatClock(t);
       overlay.setProps({
         layers: [new TripsLayer(tripLayerProps(records, t))],
       });
@@ -298,6 +331,7 @@ async function main(): Promise<void> {
       activeTag = tag;
       records = buildTripRecords(data.trips.trips[tag], data.routes);
       start = performance.now();
+      frozenT = 0;
       overlay.setProps({
         layers: [new TripsLayer(tripLayerProps(records, 0))],
       });

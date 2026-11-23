@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatClock,
   etaClockTime,
   formatDayDate,
   formatMinutes,
@@ -47,5 +48,14 @@ describe("formatDayDate", () => {
   it("formats ISO dates like Tue, Oct 1 2019", () => {
     expect(formatDayDate("2019-10-01")).toBe("Tue, Oct 1 2019");
     expect(formatDayDate("2020-04-07")).toBe("Tue, Apr 7 2020");
+  });
+});
+
+describe("formatClock", () => {
+  it("maps the loop to HH:MM", () => {
+    expect(formatClock(0)).toBe("00:00");
+    expect(formatClock(60_000)).toBe("12:00");
+    expect(formatClock(30_000)).toBe("06:00");
+    expect(formatClock(120_000)).toBe("00:00");
   });
 });
