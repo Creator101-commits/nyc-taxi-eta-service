@@ -49,7 +49,7 @@ class FeatureBuilder:
     ) -> None:
         self.zone_infos = zone_infos
         self.road_km = road_km or {}
-        self._holidays = holiday_dates()
+        self._holidays = sorted(holiday_dates())
 
     def _borough(self, zone_id: int) -> str:
         info = self.zone_infos.get(zone_id)
