@@ -19,6 +19,19 @@ export function etaClockTime(pickupMinuteOfDay: number, minutes: number): string
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/** "2019-10-01" -> "Tue, Oct 1 2019" (UTC weekday, no local drift). */
+export function formatDayDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  const wd = WEEKDAYS[new Date(Date.UTC(y, m - 1, d)).getUTCDay()];
+  const months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ];
+  return `${wd}, ${months[m - 1]} ${d} ${y}`;
+}
+
 /** "2019-10" -> "Oct 2019". */
 export function formatMonth(ym: string): string {
   const [y, m] = ym.split("-").map(Number);

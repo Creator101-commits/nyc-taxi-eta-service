@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { etaClockTime, formatMinutes, formatMonth } from "./format";
+import {
+  etaClockTime,
+  formatDayDate,
+  formatMinutes,
+  formatMonth,
+} from "./format";
 
 describe("formatMinutes", () => {
   it("formats sub-hour trips", () => {
@@ -35,5 +40,12 @@ describe("formatMonth", () => {
   it("formats YYYY-MM", () => {
     expect(formatMonth("2019-10")).toBe("Oct 2019");
     expect(formatMonth("2021-12")).toBe("Dec 2021");
+  });
+});
+
+describe("formatDayDate", () => {
+  it("formats ISO dates like Tue, Oct 1 2019", () => {
+    expect(formatDayDate("2019-10-01")).toBe("Tue, Oct 1 2019");
+    expect(formatDayDate("2020-04-07")).toBe("Tue, Apr 7 2020");
   });
 });

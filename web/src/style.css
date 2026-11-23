@@ -96,3 +96,19 @@ main { flex: 1; display: flex; min-height: 0; }
   border-radius: 4px;
   white-space: nowrap;
 }
+
+#day-selector { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+.day-btn {
+  background: #141a26;
+  border: 1px solid #33507e;
+  color: var(--muted);
+  font-size: 11.5px;
+  padding: 4px 9px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.day-btn.active {
+  border-color: var(--taxi);
+  color: var(--text);
+}
+.day-btn:hover { border-color: var(--accent); }

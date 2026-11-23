@@ -13,7 +13,7 @@ import {
 import { LOOP_MS, buildTripRecords, type TripRecord } from "./trips";
 import { buildDriftChart, renderDriftChartSvg } from "./driftchart";
 import { predictionOverlay } from "./prediction";
-import { formatMinutes } from "./format";
+import { formatDayDate, formatMinutes } from "./format";
 
 const DARK_STYLE: maplibregl.StyleSpecification = {
   version: 8,
@@ -144,10 +144,9 @@ function renderDrift(drift: SiteData["drift"]): void {
     : `No degraded months in this window (cut ${cut}).`;
 }
 
-function renderDays(trips: TripsFile): void {
+function renderDays(trips: TripsFile, selected: string): void {
   const el = document.getElementById("days-body");
   if (!el) return;
-  const animatedTag = Object.keys(trips.trips)[0];
   const tags = Object.keys(trips.days);
   if (tags.length === 0) {
     el.textContent = "No demo days in this export.";
@@ -156,19 +155,37 @@ function renderDays(trips: TripsFile): void {
   el.innerHTML = tags
     .map((tag) => {
       const d = trips.days[tag];
-      const animated = tag === animatedTag ? " (animated)" : "";
+      const mark = tag === selected ? " (selected)" : "";
       const per = d.real_trips_per_taxi;
       const perTxt =
         per != null
           ? `; 1 taxi = about ${Math.round(per).toLocaleString()} real trips`
           : "";
       return (
-        `<div>${d.date}${animated}: about ` +
+        `<div>${d.date}${mark}: about ` +
         `${d.est_real_trips.toLocaleString()} real trips, ` +
         `${d.n_exported.toLocaleString()} shown${perTxt}</div>`
       );
     })
     .join("");
+}
+
+function renderDaySelector(
+  trips: TripsFile,
+  selected: string,
+  onPick: (tag: string) => void,
+): void {
+  const el = document.getElementById("day-selector");
+  if (!el) return;
+  el.innerHTML = "";
+  for (const tag of Object.keys(trips.days)) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "day-btn" + (tag === selected ? " active" : "");
+    btn.textContent = formatDayDate(trips.days[tag].date);
+    btn.addEventListener("click", () => onPick(tag));
+    el.appendChild(btn);
+  }
 }
 
 function tripLayerProps(records: TripRecord[], currentTime: number) {
@@ -231,11 +248,12 @@ async function main(): Promise<void> {
 
     // Animated taxis via deck.gl TripsLayer; currentTime advances on a
     // LOOP_MS clock and the layer props are re-set each frame (deck.gl
-    // diffs by layer id, so the data buffers are reused).
+    // diffs by layer id, so the data buffers are reused). The day
+    // selector swaps the record set and restarts the loop.
     const dayTags = Object.keys(data.trips.trips);
-    const tripsKey = dayTags[0];
-    const records: TripRecord[] = tripsKey
-      ? buildTripRecords(data.trips.trips[tripsKey], data.routes)
+    let activeTag = dayTags[0];
+    let records: TripRecord[] = activeTag
+      ? buildTripRecords(data.trips.trips[activeTag], data.routes)
       : [];
 
     // Hover tooltip: actual vs predicted minutes for the picked trip.
@@ -263,7 +281,7 @@ async function main(): Promise<void> {
     });
     map.addControl(overlay as unknown as maplibregl.IControl);
 
-    const start = performance.now();
+    let start = performance.now();
     const tick = () => {
       const t = (performance.now() - start) % LOOP_MS;
       overlay.setProps({
@@ -273,11 +291,24 @@ async function main(): Promise<void> {
     };
     requestAnimationFrame(tick);
 
+    const setDay = (tag: string) => {
+      if (!(tag in data.trips.trips)) return;
+      activeTag = tag;
+      records = buildTripRecords(data.trips.trips[tag], data.routes);
+      start = performance.now();
+      overlay.setProps({
+        layers: [new TripsLayer(tripLayerProps(records, 0))],
+      });
+      renderDaySelector(data.trips, activeTag, setDay);
+      renderDays(data.trips, activeTag);
+    };
+    renderDaySelector(data.trips, activeTag, setDay);
+
     void tryLivePrediction(map, data.zones);
   });
 
   renderDrift(data.drift);
-  renderDays(data.trips);
+  renderDays(data.trips, Object.keys(data.trips.trips)[0] ?? "");
 }
 
 void main();
