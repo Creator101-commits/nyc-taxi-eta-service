@@ -57,6 +57,17 @@ jobs:
         run: npm test
       - name: Build site
         run: npm run build
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Run e2e smoke
+        run: npx playwright test
+      - name: Upload e2e screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-e2e-screenshot
+          path: web/test-results/
+          if-no-files-found: ignore
 
   docker:
     runs-on: ubuntu-latest

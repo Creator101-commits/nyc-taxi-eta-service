@@ -343,10 +343,21 @@ async function main(): Promise<void> {
     });
 
     let start = performance.now() - frozenT;
+    let frames = 0;
+    const nycDebug: { activeTag: string; recordCount: number; frames: number } = {
+      activeTag,
+      recordCount: records.length,
+      frames: 0,
+    };
+    (window as unknown as { __nyc: typeof nycDebug }).__nyc = nycDebug;
     const tick = () => {
       const now = performance.now();
       const t = playing ? (now - start) % LOOP_MS : frozenT;
       if (playing) frozenT = t;
+      frames += 1;
+      nycDebug.activeTag = activeTag;
+      nycDebug.recordCount = records.length;
+      nycDebug.frames = frames;
       if (clockEl) clockEl.textContent = formatClock(t);
       overlay.setProps({
         layers: [new TripsLayer(tripLayerProps(records, t))],

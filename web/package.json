@@ -6,6 +6,7 @@
   "scripts": {
     "test": "vitest run",
     "build": "vite build",
+    "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "dev": "vite"
   },
@@ -20,6 +21,7 @@
     "maplibre-gl": "6.18.0"
   },
   "devDependencies": {
+    "@playwright/test": "1.65.1",
     "@types/node": "26.6.6",
     "typescript": "7.0.2",
     "vite": "8.3.8",
