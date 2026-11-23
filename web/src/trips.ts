@@ -83,6 +83,20 @@ export function buildTripRecords(
   return out;
 }
 
+/** Sorted unique route keys used by a day's trips that have a route. */
+export function dayRouteKeys(
+  trips: TripRow[],
+  routes: RoutesFile,
+): string[] {
+  const keys = new Set<string>();
+  for (const t of trips) {
+    const key = routeKey(t.pu, t.do);
+    const path = routes[key];
+    if (path && path.length >= 2) keys.add(key);
+  }
+  return [...keys].sort();
+}
+
 /** Position along a polyline at fraction t in [0,1]. */
 export function pointAlongRoute(
   coords: [number, number][],

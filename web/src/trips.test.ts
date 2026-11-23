@@ -3,6 +3,7 @@ import {
   LOOP_MS,
   MIN_TRIP_MS,
   buildTripRecords,
+  dayRouteKeys,
   pointAlongRoute,
   routeKey,
   tripToRecord,
@@ -98,6 +99,25 @@ describe("buildTripRecords", () => {
     const recs = buildTripRecords(trips, routes, 1);
     expect(recs).toHaveLength(1);
     expect(recs[0].pu).toBe(1);
+  });
+
+  it("keeps every trip that has a route (no cap by default)", () => {
+    const trips: TripRow[] = Array.from({ length: 450 }, (_, i) => ({
+      pu: 1, do: 2, minute: i % 1440, minutes: 10, pred_minutes: 10,
+    }));
+    const recs = buildTripRecords(trips, routes);
+    expect(recs).toHaveLength(450);
+  });
+});
+
+describe("dayRouteKeys", () => {
+  it("returns only keys used by the day's trips with valid routes", () => {
+    const trips: TripRow[] = [
+      { pu: 1, do: 2, minute: 0, minutes: 5, pred_minutes: 5 },
+      { pu: 1, do: 2, minute: 60, minutes: 5, pred_minutes: 5 },
+      { pu: 3, do: 4, minute: 0, minutes: 5, pred_minutes: 5 }, // no route
+    ];
+    expect(dayRouteKeys(trips, routes)).toEqual(["1>2"]);
   });
 });
 

@@ -12,7 +12,12 @@ import {
   type TripsFile,
   type ZoneCollection,
 } from "./data";
-import { LOOP_MS, buildTripRecords, type TripRecord } from "./trips";
+import {
+  LOOP_MS,
+  buildTripRecords,
+  dayRouteKeys,
+  type TripRecord,
+} from "./trips";
 import { buildDriftChart, renderDriftChartSvg } from "./driftchart";
 import { predictionOverlay } from "./prediction";
 import { formatClock, formatDayDate, formatMinutes } from "./format";
@@ -31,17 +36,22 @@ const DARK_STYLE: maplibregl.StyleSpecification = {
   ],
 };
 
-function routesToGeoJSON(routes: SiteData["routes"]) {
+function routesToGeoJSON(
+  routes: SiteData["routes"],
+  keys?: ReadonlySet<string>,
+) {
   return {
     type: "FeatureCollection" as const,
-    features: Object.entries(routes).map(([key, coords]) => ({
-      type: "Feature" as const,
-      properties: { pair: key },
-      geometry: {
-        type: "LineString" as const,
-        coordinates: coords,
-      },
-    })),
+    features: Object.entries(routes)
+      .filter(([key]) => !keys || keys.has(key))
+      .map(([key, coords]) => ({
+        type: "Feature" as const,
+        properties: { pair: key },
+        geometry: {
+          type: "LineString" as const,
+          coordinates: coords,
+        },
+      })),
   };
 }
 
@@ -251,20 +261,6 @@ async function main(): Promise<void> {
       paint: { "line-color": "#33507e", "line-width": 0.6 },
     });
 
-    // Illustrative routes between zone centroids.
-    const routeData = routesToGeoJSON(data.routes);
-    map.addSource("routes", { type: "geojson", data: routeData });
-    map.addLayer({
-      id: "routes-line",
-      type: "line",
-      source: "routes",
-      paint: {
-        "line-color": "#4cc2ff",
-        "line-width": 1.1,
-        "line-opacity": 0.55,
-      },
-    });
-
     // Animated taxis via deck.gl TripsLayer; currentTime advances on a
     // LOOP_MS clock and the layer props are re-set each frame (deck.gl
     // diffs by layer id, so the data buffers are reused). The day
@@ -274,6 +270,28 @@ async function main(): Promise<void> {
     let records: TripRecord[] = activeTag
       ? buildTripRecords(data.trips.trips[activeTag], data.routes)
       : [];
+
+    // Illustrative routes between zone centroids, restricted to the
+    // selected demo day and kept faint so the taxi animation dominates.
+    const routesForDay = (tag: string) =>
+      routesToGeoJSON(
+        data.routes,
+        new Set(dayRouteKeys(data.trips.trips[tag] ?? [], data.routes)),
+      );
+    map.addSource("routes", {
+      type: "geojson",
+      data: routesForDay(activeTag ?? ""),
+    });
+    map.addLayer({
+      id: "routes-line",
+      type: "line",
+      source: "routes",
+      paint: {
+        "line-color": "#4cc2ff",
+        "line-width": 0.8,
+        "line-opacity": 0.12,
+      },
+    });
 
     // Hover tooltip: actual vs predicted minutes for the picked trip.
     const tip = document.createElement("div");
@@ -346,6 +364,10 @@ async function main(): Promise<void> {
       overlay.setProps({
         layers: [new TripsLayer(tripLayerProps(records, 0))],
       });
+      const routesSrc = map.getSource("routes") as
+        | maplibregl.GeoJSONSource
+        | undefined;
+      routesSrc?.setData(routesForDay(tag));
       renderDaySelector(data.trips, activeTag, setDay);
       renderDays(data.trips, activeTag);
     };
