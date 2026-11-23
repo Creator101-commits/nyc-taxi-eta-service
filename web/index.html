@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NYC Taxi Trip-Time Service</title>
+  </head>
+  <body>
+    <div id="app">
+      <header id="topbar">
+        <div>
+          <h1>NYC Taxi Trip-Time Service</h1>
+          <p class="sub">
+            LightGBM ETA model, drift alarms and retraining policies.
+            Predictions reflect late-2021 traffic patterns.
+          </p>
+        </div>
+        <div id="prediction-card" class="card" hidden>
+          <div class="card-title">Sample prediction</div>
+          <div id="prediction-body"></div>
+        </div>
+      </header>
+      <main>
+        <div id="map" aria-label="NYC taxi map"></div>
+        <aside id="side">
+          <section class="card">
+            <div class="card-title">About the paths</div>
+            <p class="note">
+              Taxi paths are <strong>illustrative</strong>: TLC data records
+              pickup and dropoff zones and times, not GPS traces. Routes are
+              shortest paths on the OSM drive graph between zone centroids.
+            </p>
+          </section>
+          <section class="card">
+            <div class="card-title">Deployment drift</div>
+            <div id="drift-chart"></div>
+            <p class="note" id="drift-caption"></p>
+          </section>
+          <section class="card">
+            <div class="card-title">Legend</div>
+            <ul class="legend">
+              <li><span class="sw zone"></span>Taxi zone</li>
+              <li><span class="sw route"></span>Illustrative route</li>
+              <li><span class="sw taxi"></span>Taxi (animated)</li>
+              <li><span class="sw degraded"></span>Degraded month</li>
+            </ul>
+          </section>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

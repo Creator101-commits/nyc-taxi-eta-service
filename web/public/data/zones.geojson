@@ -1,0 +1,425 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 1,
+    "zone": "EWR",
+    "borough": "EWR"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -74.181,
+       40.683
+      ],
+      [
+       -74.169,
+       40.683
+      ],
+      [
+       -74.169,
+       40.695
+      ],
+      [
+       -74.181,
+       40.695
+      ],
+      [
+       -74.181,
+       40.683
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 4,
+    "zone": "Astoria",
+    "borough": "Queens"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.931,
+       40.766
+      ],
+      [
+       -73.919,
+       40.766
+      ],
+      [
+       -73.919,
+       40.778
+      ],
+      [
+       -73.931,
+       40.778
+      ],
+      [
+       -73.931,
+       40.766
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 12,
+    "zone": "Midtown East",
+    "borough": "Manhattan"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.978,
+       40.746
+      ],
+      [
+       -73.966,
+       40.746
+      ],
+      [
+       -73.966,
+       40.758
+      ],
+      [
+       -73.978,
+       40.758
+      ],
+      [
+       -73.978,
+       40.746
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 48,
+    "zone": "Clinton East",
+    "borough": "Manhattan"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.987,
+       40.762
+      ],
+      [
+       -73.975,
+       40.762
+      ],
+      [
+       -73.975,
+       40.774
+      ],
+      [
+       -73.987,
+       40.774
+      ],
+      [
+       -73.987,
+       40.762
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 74,
+    "zone": "East Village",
+    "borough": "Manhattan"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.987,
+       40.72
+      ],
+      [
+       -73.975,
+       40.72
+      ],
+      [
+       -73.975,
+       40.732
+      ],
+      [
+       -73.987,
+       40.732
+      ],
+      [
+       -73.987,
+       40.72
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 100,
+    "zone": "Upper West Side",
+    "borough": "Manhattan"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.977,
+       40.777
+      ],
+      [
+       -73.965,
+       40.777
+      ],
+      [
+       -73.965,
+       40.789
+      ],
+      [
+       -73.977,
+       40.789
+      ],
+      [
+       -73.977,
+       40.777
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 132,
+    "zone": "JFK",
+    "borough": "Queens"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.788,
+       40.655
+      ],
+      [
+       -73.776,
+       40.655
+      ],
+      [
+       -73.776,
+       40.667
+      ],
+      [
+       -73.788,
+       40.667
+      ],
+      [
+       -73.788,
+       40.655
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 138,
+    "zone": "LGA",
+    "borough": "Queens"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.881,
+       40.768
+      ],
+      [
+       -73.869,
+       40.768
+      ],
+      [
+       -73.869,
+       40.78
+      ],
+      [
+       -73.881,
+       40.78
+      ],
+      [
+       -73.881,
+       40.768
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 161,
+    "zone": "Midtown",
+    "borough": "Manhattan"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.992,
+       40.752
+      ],
+      [
+       -73.98,
+       40.752
+      ],
+      [
+       -73.98,
+       40.764
+      ],
+      [
+       -73.992,
+       40.764
+      ],
+      [
+       -73.992,
+       40.752
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 186,
+    "zone": "St George",
+    "borough": "Staten Island"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -74.154,
+       40.637
+      ],
+      [
+       -74.142,
+       40.637
+      ],
+      [
+       -74.142,
+       40.649
+      ],
+      [
+       -74.154,
+       40.649
+      ],
+      [
+       -74.154,
+       40.637
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 224,
+    "zone": "Williamsburg",
+    "borough": "Brooklyn"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.964,
+       40.702
+      ],
+      [
+       -73.952,
+       40.702
+      ],
+      [
+       -73.952,
+       40.714
+      ],
+      [
+       -73.964,
+       40.714
+      ],
+      [
+       -73.964,
+       40.702
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "location_id": 237,
+    "zone": "Bayside",
+    "borough": "Queens"
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -73.777,
+       40.76
+      ],
+      [
+       -73.765,
+       40.76
+      ],
+      [
+       -73.765,
+       40.772
+      ],
+      [
+       -73.777,
+       40.772
+      ],
+      [
+       -73.777,
+       40.76
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

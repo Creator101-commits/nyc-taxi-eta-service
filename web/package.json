@@ -1,0 +1,28 @@
+{
+  "name": "nyc-taxi-eta-web",
+  "version": "0.1.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "dev": "vite"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@deck.gl/geo-layers": "9.4.1",
+    "@deck.gl/mapbox": "9.4.1",
+    "deck.gl": "9.4.1",
+    "maplibre-gl": "6.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.6",
+    "typescript": "7.0.2",
+    "vite": "8.3.8",
+    "vitest": "5.1.1"
+  }
+}

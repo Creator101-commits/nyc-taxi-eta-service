@@ -1,0 +1,85 @@
+:root {
+  --bg: #0b0e14;
+  --panel: #12161f;
+  --panel-border: #232a3a;
+  --text: #dfe6f3;
+  --muted: #8b96ad;
+  --accent: #4cc2ff;
+  --taxi: #ffd166;
+  --degraded: #ff6b6b;
+}
+
+* { box-sizing: border-box; }
+
+html, body, #app { height: 100%; margin: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+}
+
+#app { display: flex; flex-direction: column; }
+
+#topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--panel-border);
+  background: var(--panel);
+}
+
+#topbar h1 { font-size: 18px; margin: 0; font-weight: 650; }
+#topbar .sub { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.card-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+#prediction-card { min-width: 220px; }
+#prediction-body { font-size: 13px; line-height: 1.5; }
+#prediction-body .big { font-size: 22px; font-weight: 700; color: var(--taxi); }
+
+main { flex: 1; display: flex; min-height: 0; }
+
+#map { flex: 1; min-width: 0; }
+
+#side {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  overflow-y: auto;
+  border-left: 1px solid var(--panel-border);
+}
+
+.note { color: var(--muted); font-size: 12.5px; line-height: 1.55; margin: 0; }
+.note strong { color: var(--text); }
+
+.legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.legend li { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 12.5px; }
+
+.sw { width: 14px; height: 10px; border-radius: 2px; display: inline-block; }
+.sw.zone { background: #1d2b45; border: 1px solid #33507e; }
+.sw.route { background: var(--accent); opacity: 0.8; }
+.sw.taxi { background: var(--taxi); border-radius: 50%; }
+.sw.degraded { background: var(--degraded); }
+
+#drift-chart svg { width: 100%; height: auto; display: block; }
+#drift-caption { margin-top: 8px; }
