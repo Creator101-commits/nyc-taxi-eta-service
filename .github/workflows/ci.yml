@@ -96,6 +96,7 @@ jobs:
       - name: Smoke test API and site
         run: |
           docker run -d --name nyc -p 8000:8000 nyc-eta-service
+          trap 'docker logs nyc' EXIT
           for i in $(seq 1 30); do
             if curl -sf http://localhost:8000/health > /dev/null; then break; fi
             sleep 2
