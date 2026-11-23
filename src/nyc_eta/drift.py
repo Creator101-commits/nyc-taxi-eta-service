@@ -44,7 +44,11 @@ def volume_ratio(cur_n: int, ref_monthly_mean: float) -> float:
 def drift_share(
     ref_df: pd.DataFrame, cur_df: pd.DataFrame
 ) -> float:
-    """Evidently DataDriftPreset drifted-feature share (lazy import)."""
+    """Evidently DataDriftPreset drifted-feature share (lazy import).
+
+    Result layout: metrics[i].result.drift_by_columns[feature]
+    .drift_detected (bool). Share = drifted / analyzed features.
+    """
     from evidently.metric_preset import DataDriftPreset  # noqa: PLC0415
     from evidently.report import Report  # noqa: PLC0415 - kernel-only dep
 
@@ -52,23 +56,14 @@ def drift_share(
     report = Report(metrics=[DataDriftPreset()])
     report.run(reference_data=ref_df[feats], current_data=cur_df[feats])
     result = report.as_dict()
-    shares = []
-    for m in result.get("metrics", []):
-        for row in m.get("result", {}).get("drift_share", []):
-            shares.append(row)
-    # DataDriftPreset result layout varies; fall back to counting flags.
-    if not shares:
-        drifted_features = result.get("metrics", [])[0].get(
-            "result", {}
-        ).get("drifted_features", [])
-        drifted = sum(
-            1
-            for feature_result in drifted_features
-            if feature_result.get("drifted")
-        )
-        n_feat = len(feats)
-        return drifted / n_feat if n_feat else float("nan")
-    return float(np.mean(shares))
+    for metric in result.get("metrics", []):
+        cols = metric.get("result", {}).get("drift_by_columns")
+        if isinstance(cols, dict) and cols:
+            drifted = sum(
+                1 for c in cols.values() if c.get("drift_detected")
+            )
+            return drifted / len(cols)
+    return float("nan")
 
 
 def compute_signals(
