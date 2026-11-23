@@ -1,5 +1,5 @@
 import type { DriftFile } from "./data";
-import { formatMonth } from "./format";
+import { formatMonthShort } from "./format";
 
 /**
  * Build an SVG line chart of per-policy monthly MAE with drift overlays:
@@ -35,12 +35,13 @@ export interface ChartModel {
   degradedCut: number;
 }
 
-const W = 260;
-const H = 110;
-const PAD_L = 34;
+const W = 280;
+const H = 150;
+const PAD_L = 36;
 const PAD_R = 8;
 const PAD_T = 10;
-const PAD_B = 20;
+const PAD_B = 22;
+const MAX_MONTH_TICKS = 4;
 
 const POLICY_ORDER = ["static", "monthly", "drift"];
 const POLICY_COLORS: Record<string, string> = {
@@ -151,11 +152,18 @@ export function renderDriftChartSvg(model: ChartModel): string {
       `<text x="${(x(model.covidIdx) + 2).toFixed(1)}" y="${PAD_T + 8}" font-size="8" fill="#8b96ad">COVID</text>`
     : "";
 
-  const monthTicks = months
-    .map((m, i) =>
-      i % Math.ceil(n / 6) === 0
-        ? `<text x="${x(i).toFixed(1)}" y="${h - 6}" text-anchor="middle" font-size="8" fill="#8b96ad">${formatMonth(m)}</text>`
-        : "",
+  // At most MAX_MONTH_TICKS evenly spaced, non-overlapping labels.
+  const tickIdx =
+    n <= MAX_MONTH_TICKS
+      ? months.map((_, i) => i)
+      : Array.from(
+          { length: MAX_MONTH_TICKS },
+          (_, k) => Math.round((k * (n - 1)) / (MAX_MONTH_TICKS - 1)),
+        );
+  const monthTicks = tickIdx
+    .map(
+      (i) =>
+        `<text x="${x(i).toFixed(1)}" y="${h - 7}" text-anchor="middle" font-size="8" fill="#8b96ad">${formatMonthShort(months[i])}</text>`,
     )
     .join("");
 

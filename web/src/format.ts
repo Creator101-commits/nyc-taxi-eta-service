@@ -49,3 +49,13 @@ export function formatMonth(ym: string): string {
   ];
   return `${names[m - 1]} ${y}`;
 }
+
+/** "2019-10" -> "Oct '19" (compact axis tick). */
+export function formatMonthShort(ym: string): string {
+  const [y, m] = ym.split("-").map(Number);
+  const names = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  ];
+  return `${names[m - 1]} '${String(y).slice(2)}`;
+}
