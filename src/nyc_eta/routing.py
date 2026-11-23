@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,7 +20,11 @@ import numpy as np
 from nyc_eta import config
 from nyc_eta.zones import ZoneInfo
 
-OVERPASS_STATUS_URL = "https://overpass-api.de/api/status"
+OVERPASS_STATUS_URLS = [
+    "https://overpass-api.de/api/status",
+    "https://overpass.kumi.systems/api/status",
+    "https://overpass.private.coffee/api/status",
+]
 
 
 @dataclass(frozen=True)
@@ -32,16 +37,34 @@ class GraphRecord:
 
 
 def fetch_osm_base() -> str:
-    """Overpass replication timestamp (osm_base) at query time."""
-    try:
-        req = urllib.request.Request(
-            OVERPASS_STATUS_URL, headers={"User-Agent": "nyc-eta-research/0.1"}
+    """Overpass replication timestamp (osm_base) at query time.
+
+    Tries each public instance's status endpoint; accepts the JSON
+    ``osm3s.timestamp_osm_base`` field or a ``timestamp_osm_base`` /
+    ``osm_base`` token in a text status. Returns "" when unavailable.
+    """
+    for url in OVERPASS_STATUS_URLS:
+        try:
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "nyc-eta-research/0.1"}
+            )
+            with urllib.request.urlopen(req, timeout=20) as resp:
+                body = resp.read().decode()
+        except Exception:
+            continue
+        try:
+            status = json.loads(body)
+            value = status.get("osm3s", {}).get("timestamp_osm_base", "")
+            if value:
+                return str(value)
+        except json.JSONDecodeError:
+            pass
+        match = re.search(
+            r"(?:timestamp_)?osm_base[\"':=\s]+([0-9T:\-Z.+]+)", body
         )
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            status = json.loads(resp.read().decode())
-        return str(status.get("osm3s", {}).get("timestamp_osm_base", ""))
-    except Exception:
-        return ""
+        if match:
+            return match.group(1).strip().strip('"')
+    return ""
 
 
 def download_drive_graph(work_dir: Path) -> tuple[Any, GraphRecord]:

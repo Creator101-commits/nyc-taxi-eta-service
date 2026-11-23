@@ -9,7 +9,8 @@
   "enable_tpu": "false",
   "enable_internet": "true",
   "dataset_sources": [
-    "sreeharshak101/nyc-taxi-eta-src"
+    "sreeharshak101/nyc-taxi-eta-src",
+    "sreeharshak101/nyc-taxi-eta-osm-graph"
   ],
   "competition_sources": [],
   "kernel_sources": []

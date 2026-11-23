@@ -65,16 +65,49 @@ def _polygon_centroid(rings: list[list[tuple[float, float]]]) -> tuple[float, fl
     return (c_y / (6.0 * a), c_x / (6.0 * a))
 
 
+def _wgs84_transformer(prj_wkt: str) -> Any:
+    """pyproj transformer from the shapefile CRS to EPSG:4326.
+
+    The TLC taxi_zones shapefile is projected (NAD83 StatePlane NY Long
+    Island, US survey feet); without this step centroids and GeoJSON
+    coordinates are meaningless to consumers expecting lon/lat.
+    """
+    from pyproj import Transformer  # noqa: PLC0415
+
+    if not prj_wkt.strip():
+        return None
+    return Transformer.from_crs(prj_wkt, "EPSG:4326", always_xy=True)
+
+
 def load_zone_shapes(zip_path: Path) -> dict[int, dict[str, Any]]:
-    """Parse taxi_zones.zip shapefile -> {location_id: geojson-ish polygon}."""
+    """Parse taxi_zones.zip shapefile -> {location_id: geojson-ish polygon}.
+
+    Rings are returned as (lon, lat) pairs in WGS84, reprojected from the
+    shapefile's .prj CRS when present.
+    """
     import shapefile  # pyshp, pure python
 
     with zipfile.ZipFile(zip_path) as zf:
         names = {n.lower(): n for n in zf.namelist()}
         shp_name = next(n for n in names if n.endswith(".shp"))
         dbf_name = next(n for n in names if n.endswith(".dbf"))
+        prj_name = next((n for n in names if n.endswith(".prj")), None)
         shp_bytes = io.BytesIO(zf.read(names[shp_name]))
         dbf_bytes = io.BytesIO(zf.read(names[dbf_name]))
+        prj_wkt = (
+            zf.read(names[prj_name]).decode() if prj_name is not None else ""
+        )
+
+    to_wgs84 = _wgs84_transformer(prj_wkt)
+
+    def _ring(points: list[tuple[float, float]]) -> list[tuple[float, float]]:
+        ring = [(float(p[0]), float(p[1])) for p in points]
+        if to_wgs84 is None or not ring:
+            return ring
+        lons, lats = to_wgs84.transform(
+            [p[0] for p in ring], [p[1] for p in ring]
+        )
+        return list(zip(lons, lats, strict=True))
 
     reader = shapefile.Reader(shp=shp_bytes, dbf=dbf_bytes)
     fields = [f[0] for f in reader.fields[1:]]
@@ -85,12 +118,16 @@ def load_zone_shapes(zip_path: Path) -> dict[int, dict[str, Any]]:
         parts = []
         if sr.shape.parts:
             for i, start in enumerate(sr.shape.parts):
-                end = sr.shape.parts[i + 1] if i + 1 < len(sr.shape.parts) else len(sr.shape.points)
-                ring = [(p[0], p[1]) for p in sr.shape.points[start:end]]
+                end = (
+                    sr.shape.parts[i + 1]
+                    if i + 1 < len(sr.shape.parts)
+                    else len(sr.shape.points)
+                )
+                ring = _ring(sr.shape.points[start:end])
                 if ring:
                     parts.append(ring)
         else:
-            parts = [[(p[0], p[1]) for p in sr.shape.points]]
+            parts = [_ring(sr.shape.points)]
         zones[loc_id] = {"rings": parts}
     return zones
 

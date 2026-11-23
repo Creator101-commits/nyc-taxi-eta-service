@@ -79,10 +79,38 @@ def main() -> None:
 
     _, zone_infos, _ = build_zone_table(lookup, zones_zip)
 
-    graph, grec = routing.download_drive_graph(WORK)
+    # Prefer a fresh Overpass download so osm_base matches the graph; if
+    # Overpass is unreachable, fall back to a previously built graphml
+    # mounted from the graph dataset (distances are recomputed either way).
+    mounted = [
+        p for p in KAGGLE_INPUT.rglob("nyc_drive_graph.graphml")
+    ]
+    graphml_src = "download"
+    try:
+        graph, grec = routing.download_drive_graph(WORK)
+    except Exception as exc:
+        if not mounted:
+            raise
+        print(f"overpass download failed ({exc}); reusing mounted graphml",
+              flush=True)
+        graphml_src = "mounted_dataset"
+        graphml = mounted[0]
+        graph = routing.load_graph(graphml)
+        prov_path = graphml.parent / "provenance.json"
+        prov = (json.loads(prov_path.read_text())
+                if prov_path.exists() else {})
+        osm_base = prov.get("osm_base") or routing.fetch_osm_base()
+        grec = routing.GraphRecord(
+            graphml_path=str(graphml),
+            sha256=_sha256(graphml),
+            osm_base=str(osm_base),
+            n_nodes=graph.number_of_nodes(),
+            n_edges=graph.number_of_edges(),
+        )
+    graphml_path = Path(grec.graphml_path)
     nodes = routing.zone_nodes(graph, zone_infos)
-    print(f"graph: {grec.n_nodes} nodes, {grec.n_edges} edges; "
-          f"{len(nodes)} zone nodes", flush=True)
+    print(f"graph ({graphml_src}): {grec.n_nodes} nodes, "
+          f"{grec.n_edges} edges; {len(nodes)} zone nodes", flush=True)
 
     t_dist = time.time()
     dists = routing.all_pairs_road_km(graph, nodes)
@@ -93,13 +121,13 @@ def main() -> None:
     print(f"distances: {len(dists)} pairs in "
           f"{time.time() - t_dist:.1f}s", flush=True)
 
-    graphml = Path(grec.graphml_path)
-    shutil.copyfile(graphml, OUT / "nyc_drive_graph.graphml")
+    shutil.copyfile(graphml_path, OUT / "nyc_drive_graph.graphml")
     (OUT / "osm_base.txt").write_text(grec.osm_base + "\n")
     provenance = {
         "graphml_sha256": _sha256(OUT / "nyc_drive_graph.graphml"),
         "distances_sha256": _sha256(dist_path),
         "osm_base": grec.osm_base,
+        "graph_source": graphml_src,
         "n_nodes": grec.n_nodes,
         "n_edges": grec.n_edges,
         "n_zone_pairs": len(dists),
