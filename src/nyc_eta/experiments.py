@@ -329,7 +329,9 @@ def run_experiment(
             "degraded": degraded[m],
         }
         month_data[m] = policies.MonthData(
-            month=m, features=fdf, minutes=fdf["minutes"].to_numpy(),
+            month=m,
+            features=fdf[["minutes"] + config.FEATURE_COLUMNS],
+            minutes=fdf["minutes"].to_numpy(),
             signals=sig,
         )
         boot_frames[m] = pd.DataFrame({
@@ -471,6 +473,8 @@ def run_experiment(
         ],
         "clean_counts": clean_counts,
         "osm_graph": graph_record,
+        "distances_sha256": _sha256_file(dist_table_path)
+        if dist_table_path.exists() else "",
         "model_grid": grid_records,
         "selected": plan["selected"],
         "conformal": plan["conformal"],

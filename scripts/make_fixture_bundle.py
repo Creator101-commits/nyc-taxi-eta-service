@@ -17,7 +17,7 @@ import numpy as np
 import pandas as pd
 import shapefile
 
-from nyc_eta import config, models
+from nyc_eta import models
 from nyc_eta.features import FeatureBuilder
 from nyc_eta.routing import save_distance_table
 from nyc_eta.zones import ZoneInfo
