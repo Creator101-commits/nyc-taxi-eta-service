@@ -263,3 +263,68 @@ class TestWebExport:
             "zones.geojson", "drift.json", "trips.json", "routes.json",
         }
         assert all(v > 0 for v in meta["files"].values())
+
+
+def _dense_ring(x0: float, y0: float, size: float = 0.002,
+                step: float = 0.00002) -> list[list[float]]:
+    """Square ring with collinear points every ``step`` degrees."""
+    per = int(round(size / step))
+    pts: list[list[float]] = []
+    for i in range(per + 1):
+        pts.append([x0 + i * step, y0])
+    for i in range(1, per + 1):
+        pts.append([x0 + size, y0 + i * step])
+    for i in range(1, per + 1):
+        pts.append([x0 + size - i * step, y0 + size])
+    for i in range(1, per):
+        pts.append([x0, y0 + size - i * step])
+    pts.append([x0, y0])
+    return pts
+
+
+class TestZoneGeojsonSimplify:
+    def test_polygon_and_multipolygon_simplified_and_rounded(self):
+        fc = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [_dense_ring(-74.123456789, 40.6)],
+                    },
+                },
+                {
+                    "type": "Feature",
+                    "properties": {},
+                    "geometry": {
+                        "type": "MultiPolygon",
+                        "coordinates": [
+                            [_dense_ring(-74.09, 40.65)],
+                            [_dense_ring(-74.04, 40.70)],
+                        ],
+                    },
+                },
+            ],
+        }
+        experiments._simplify_zones_geojson(fc)
+
+        poly_ring = fc["features"][0]["geometry"]["coordinates"][0]
+        mp = fc["features"][1]["geometry"]["coordinates"]
+        # ~400-point rings collapse to a handful of corners.
+        assert len(poly_ring) < 20
+        assert len(mp) == 2
+        assert all(len(part[0]) < 20 for part in mp)
+
+        def walk(c: object) -> None:
+            seq = c  # type: ignore[assignment]
+            if isinstance(seq[0], (int, float)):
+                assert seq[0] == round(seq[0], 5)
+                assert seq[1] == round(seq[1], 5)
+            else:
+                for e in seq:
+                    walk(e)
+
+        for feat in fc["features"]:
+            walk(feat["geometry"]["coordinates"])

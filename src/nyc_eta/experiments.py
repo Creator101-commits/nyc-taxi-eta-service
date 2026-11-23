@@ -747,27 +747,38 @@ def _simplify_route_coords(
 
 
 def _simplify_zones_geojson(zones_geojson: dict[str, Any]) -> None:
-    """Simplify zone polygons in place; rounds coordinates."""
+    """Simplify zone polygons in place; rounds coordinates.
+
+    Handles Polygon and MultiPolygon (zones can be multi-part); every
+    geometry's coordinates are rounded to WEB_COORD_DECIMALS whether or
+    not simplification produced a usable result.
+    """
     from shapely.geometry import Polygon  # noqa: PLC0415
 
     d = config.WEB_COORD_DECIMALS
+    tol = config.WEB_ZONE_SIMPLIFY_TOL
+
+    def _poly_coords(poly: Any) -> list[Any]:
+        rings = [poly.exterior, *poly.interiors]
+        return [_round_coords(list(r.coords), d) for r in rings]
+
+    def _one_polygon(rings: list[Any]) -> list[Any]:
+        if not rings:
+            return rings
+        poly = Polygon(shell=rings[0], holes=rings[1:])
+        simp = poly.simplify(tol, preserve_topology=True)
+        if simp.is_empty or simp.geom_type != "Polygon":
+            return [_round_coords(r, d) for r in rings]
+        return _poly_coords(simp)
+
     for feature in zones_geojson.get("features", []):
         geom = feature.get("geometry") or {}
-        rings = geom.get("coordinates") or []
-        if geom.get("type") != "Polygon" or not rings:
-            continue
-        poly = Polygon(shell=rings[0], holes=rings[1:])
-        simp = poly.simplify(
-            config.WEB_ZONE_SIMPLIFY_TOL, preserve_topology=True
-        )
-        if simp.is_empty or simp.geom_type != "Polygon":
-            continue
-        coords = [list(simp.exterior.coords)] + [
-            list(r.coords) for r in simp.interiors
-        ]
-        geom["coordinates"] = [
-            _round_coords(ring, d) for ring in coords
-        ]
+        gtype = geom.get("type")
+        coords = geom.get("coordinates") or []
+        if gtype == "Polygon":
+            geom["coordinates"] = _one_polygon(coords)
+        elif gtype == "MultiPolygon":
+            geom["coordinates"] = [_one_polygon(p) for p in coords]
 
 
 def _demo_day_frame(
