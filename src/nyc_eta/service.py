@@ -97,7 +97,7 @@ def _zone_json(info: ZoneInfo) -> dict[str, Any]:
 
 def create_app(bundle_dir: Path | None = None,
                web_dist: Path | None = None) -> FastAPI:
-    bundle = bundle_dir or Path(os.environ.get("NYC_ETA_BUNDLE", "model_bundle"))
+    bundle = bundle_dir or Path(os.environ.get("NYC_ETA_BUNDLE", "results/model_bundle"))
     dist = web_dist or Path(os.environ.get("NYC_ETA_WEB", "web/dist"))
     served = load_served_model(bundle)
 

@@ -1,0 +1,26 @@
+{
+  "booster_file": "model.txt",
+  "best_iteration": 462,
+  "conformal_q": 0.3725125820074022,
+  "alpha": 0.2,
+  "zone_lookup_file": "taxi_zone_lookup.csv",
+  "zone_shapefile_zip": "taxi_zones.zip",
+  "distance_table": "distances.npz",
+  "trained_through": "2021-12",
+  "trained_months": [
+    "2021-10",
+    "2021-11",
+    "2021-12"
+  ],
+  "validation_months": [
+    "2019-05",
+    "2019-06"
+  ],
+  "val_mae": 3.6609312998516548,
+  "model_note": "Served model trained on 2021-10..2021-12; predictions reflect late-2021 traffic patterns.",
+  "confidence": 0.2,
+  "git_sha": "e18c996af238f19b1a595e763b64a8f383a8f2c9",
+  "clean_counts": {
+    "reused_deploy_frames": true
+  }
+}

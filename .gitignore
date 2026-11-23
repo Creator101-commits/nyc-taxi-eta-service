@@ -35,3 +35,4 @@ models/
 # Local run dirs
 work/
 model_bundle/
+!results/model_bundle/

@@ -29,7 +29,7 @@ def run(
 
 @app.command()
 def serve(
-    bundle: Path = typer.Option(Path("model_bundle")),
+    bundle: Path = typer.Option(Path("results/model_bundle")),
     web_dist: Path = typer.Option(Path("web/dist")),
     host: str = "0.0.0.0",
     port: int = 8000,

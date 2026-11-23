@@ -1,8 +1,8 @@
 # NYC Taxi ETA service image: FastAPI + built website on one port.
 # Build context is the repo root:
 #   docker build -t nyc-eta-service .
-# Requires web/dist and model_bundle (scripts/make_fixture_bundle.py for
-# a fixture model, or the kernel's model_bundle for the real one).
+# Requires web/dist; the served-model bundle comes from
+# results/model_bundle (NYC_ETA_BUNDLE overrides it).
 FROM python:3.13-slim AS runtime
 
 COPY --from=ghcr.io/astral-sh/uv:0.9.17 /uv /uvx /usr/local/bin/
@@ -23,7 +23,7 @@ RUN uv sync --locked --no-dev
 
 # Built website + served-model bundle.
 COPY web/dist ./web/dist
-COPY model_bundle ./model_bundle
+COPY results/model_bundle ./model_bundle
 
 ENV NYC_ETA_BUNDLE=/app/model_bundle \
     NYC_ETA_WEB=/app/web/dist \
