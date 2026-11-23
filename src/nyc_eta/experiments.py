@@ -88,6 +88,7 @@ def _signals_for_month(
     ref_monthly_mean: float,
     month_df: pd.DataFrame,
     pred: np.ndarray,
+    cur_n: int,
 ) -> drift.DriftSignals:
     return drift.compute_signals(
         ref_features=builder_ref[config.FEATURE_COLUMNS],
@@ -95,7 +96,7 @@ def _signals_for_month(
         ref_monthly_mean=ref_monthly_mean,
         cur_features=month_df[config.FEATURE_COLUMNS],
         cur_pred=pred,
-        cur_n=len(month_df),
+        cur_n=cur_n,
     )
 
 
@@ -257,11 +258,17 @@ def run_experiment(
     t0 = time.time()
     ref_features = feats[train_months[0]][config.FEATURE_COLUMNS]
     ref_pred = models.predict_minutes(best, feats[train_months[0]])
-    ref_monthly_mean = float(np.mean([len(feats[m]) for m in train_months]))
+    # Volume uses cleaned trip counts, not the capped sample size, so a
+    # real demand drop registers instead of always reading ~1.0.
+    pre_volume_n = drift.cleaned_counts_for_months(clean_counts, pre_months)
+    ref_monthly_mean = float(
+        np.mean([pre_volume_n[m] for m in train_months])
+    )
     val_signals = [
         _signals_for_month(
             ref_features, ref_pred, ref_monthly_mean,
             feats[m], models.predict_minutes(best, feats[m]),
+            cur_n=pre_volume_n[m],
         )
         for m in val_months
     ]
@@ -290,8 +297,11 @@ def run_experiment(
                       "val_coverage": val_coverage},
         "baseline_val_mae": baseline_val_mae,
         "drift_thresholds": thresholds,
+        "volume_ref_monthly_mean": ref_monthly_mean,
         "val_signals": [
-            {"month": m, **{k: getattr(s, k) for k in config.DRIFT_SIGNALS}}
+            {"month": m, **{k: getattr(s, k) for k in config.DRIFT_SIGNALS},
+             "cleaned_n": int(pre_volume_n[m]),
+             "sample_n": int(len(feats[m]))}
             for m, s in zip(val_months, val_signals, strict=False)
         ],
         "card_write_epoch": card_write_epoch,
@@ -313,6 +323,9 @@ def run_experiment(
 
     # --- label-free signals + degraded flags + policies ------------------
     t0 = time.time()
+    deploy_volume_n = drift.cleaned_counts_for_months(
+        clean_counts, deploy_months
+    )
     deploy_signals: dict[str, drift.DriftSignals] = {}
     monthly_records: dict[str, dict[str, Any]] = {}
     degraded: dict[str, bool] = {}
@@ -324,7 +337,8 @@ def run_experiment(
         fdf = feats[m]
         pred = models.predict_minutes(best, fdf)
         sig = _signals_for_month(
-            ref_features, ref_pred, ref_monthly_mean, fdf, pred
+            ref_features, ref_pred, ref_monthly_mean, fdf, pred,
+            cur_n=deploy_volume_n[m],
         )
         deploy_signals[m] = sig
         mae_m = metrics.mae(fdf["minutes"].to_numpy(), pred)
@@ -336,6 +350,7 @@ def run_experiment(
                 fdf["minutes"].to_numpy(), pred
             ),
             "n": len(fdf),
+            "cleaned_n": int(deploy_volume_n[m]),
             "coverage": empirical_coverage(
                 fdf["minutes"].to_numpy(), pred, interval
             ),

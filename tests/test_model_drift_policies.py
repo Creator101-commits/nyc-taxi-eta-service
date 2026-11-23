@@ -88,6 +88,22 @@ class TestDrift:
         assert drift.pred_wasserstein_distance(a, b) == pytest.approx(1.0)
         assert drift.volume_ratio(100, 50.0) == pytest.approx(2.0)
 
+    def test_volume_ratio_uses_cleaned_counts(self):
+        # Equal per-month samples (both capped at sample_n) but different
+        # cleaned totals: len(sampled_df) would give identical ratios,
+        # so the signal must be fed the final-filter counts.
+        counts = {
+            "2019-01": {"dropoff_after_pickup": 7_400_000},
+            "2019-02": {"dropoff_after_pickup": 7_300_000},
+            "2020-04": {"dropoff_after_pickup": 2_900_000},
+        }
+        n = drift.cleaned_counts_for_months(counts, list(counts))
+        ref = float(np.mean([n["2019-01"], n["2019-02"]]))
+        covid = drift.volume_ratio(n["2020-04"], ref)
+        normal = drift.volume_ratio(n["2019-01"], ref)
+        assert covid != pytest.approx(normal)
+        assert covid == pytest.approx(2_900_000 / 7_350_000)
+
     def test_thresholds_and_alarms(self):
         sigs = [
             drift.DriftSignals(0.1, 1.0, 1.0),

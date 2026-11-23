@@ -5,7 +5,10 @@ Signals (all computable without labels):
     DataDriftPreset vs the train reference sample.
   - pred_wasserstein: Wasserstein distance between reference and month
     prediction distributions (minutes scale).
-  - volume_ratio: month sample size / mean monthly train sample size.
+  - volume_ratio: month cleaned-trip count / mean monthly train
+    cleaned-trip count. Cleaned counts come from the final cleaning
+    filter, not the capped per-month sample, so real demand drops
+    register.
 
 Alarm threshold per signal = max over the validation months' values
 (pre-specified). Degraded month = MAE > 10% above validation MAE.
@@ -39,6 +42,19 @@ def volume_ratio(cur_n: int, ref_monthly_mean: float) -> float:
     if ref_monthly_mean <= 0:
         return float("nan")
     return float(cur_n / ref_monthly_mean)
+
+
+def cleaned_counts_for_months(
+    clean_counts: dict[str, dict[str, int]], months: list[str]
+) -> dict[str, int]:
+    """Final-filter cleaned trip count per month.
+
+    This is the volume signal's n: the count after every cleaning
+    filter, before the per-month sample cap is applied.
+    """
+    return {
+        m: int(clean_counts[m]["dropoff_after_pickup"]) for m in months
+    }
 
 
 def drift_share(
