@@ -297,12 +297,12 @@ def run_experiment(
         deploy_months, raw_dir, file_records, sample_n
     )
     clean_counts.update(deploy_counts)
-    log.mark("download_deploy", time.time())
+    log.mark("download_deploy", first_deploy_read_epoch)
 
     t0 = time.time()
     for m, df in deploy_frames.items():
         feats[m] = builder.build_frame(df)
-    log.mark("features_deploy", time.time() - t0)
+    log.mark("features_deploy", t0)
 
     # --- label-free signals + degraded flags + policies ------------------
     t0 = time.time()
@@ -346,7 +346,7 @@ def run_experiment(
             "date": fdf["pickup"].dt.date,
             "ae": np.abs(fdf["minutes"].to_numpy() - pred),
         })
-    log.mark("deploy_eval", time.time() - t0)
+    log.mark("deploy_eval", t0)
 
     # --- retraining policies ---------------------------------------------
     t0 = time.time()
@@ -392,7 +392,7 @@ def run_experiment(
         fit_fn=fit_fn, predict_fn=predict_fn,
         static_model=base, signal_thresholds=thresholds,
     )
-    log.mark("policies", time.time() - t0)
+    log.mark("policies", t0)
 
     # --- drift <-> MAE correlations + alarm scores -----------------------
     deploy_list = list(deploy_months)
@@ -431,7 +431,7 @@ def run_experiment(
     bootstrap = metrics.day_cluster_bootstrap(
         boot_frames, n_boot=n_boot, seed=0
     )
-    log.mark("bootstrap", time.time() - t0)
+    log.mark("bootstrap", t0)
 
     # --- SHAP global importance: pre-COVID vs April 2020 (full run) ------
     shap_report: dict[str, Any] = {"skipped": smoke}
@@ -439,7 +439,7 @@ def run_experiment(
         t0 = time.time()
         shap_report = _compute_shap(best, train_df, feats["2020-04"],
                                     out_dir)
-        log.mark("shap", time.time() - t0)
+        log.mark("shap", t0)
 
     # --- served model: final train on SERVED_TRAIN_MONTHS -----------------
     # Only in the full run; smoke records the plan but skips heavy work.
@@ -450,7 +450,7 @@ def run_experiment(
             work_dir, raw_dir, feats, builder, zone_infos,
             best, git_sha,
         )
-        log.mark("served_model", time.time() - t0)
+        log.mark("served_model", t0)
 
     # --- web data export (always, incl. smoke) -----------------------------
     t0 = time.time()
@@ -459,7 +459,7 @@ def run_experiment(
         out_dir, zones_geojson, feats, deploy_signals,
         monthly_records, deploy_months, graphml_path, zone_infos,
     )
-    log.mark("web_export", time.time() - t0)
+    log.mark("web_export", t0)
 
     # --- manifest ----------------------------------------------------------
     ordering_ok = bool(card_write_epoch < first_deploy_read_epoch)

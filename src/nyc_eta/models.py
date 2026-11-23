@@ -39,11 +39,17 @@ class ZonePairBaseline:
         self.global_median = 10.0
 
     def fit(self, df: pd.DataFrame) -> ZonePairBaseline:
-        g = df.groupby(["pu_zone", "do_zone"])["minutes"].median()
+        # observed=True: fixed category levels include unobserved zones;
+        # without it groupby emits NaN medians for empty pairs.
+        g = df.groupby(["pu_zone", "do_zone"], observed=True)[
+            "minutes"
+        ].median()
         self.pair_medians = {
             (int(p), int(d)): float(v) for (p, d), v in g.items()
         }
-        b = df.groupby(["pu_borough", "do_borough"])["minutes"].median()
+        b = df.groupby(["pu_borough", "do_borough"], observed=True)[
+            "minutes"
+        ].median()
         self.borough_medians = {
             (str(p), str(d)): float(v) for (p, d), v in b.items()
         }
