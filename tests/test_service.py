@@ -90,6 +90,10 @@ def bundle(tmp_path: Path, feature_frame) -> Path:
         "zone_shapefile_zip": "taxi_zones.zip",
         "distance_table": "distances.npz",
         "trained_through": "2021-12",
+        "trained_months": ["2019-01"],
+        "validation_months": ["2019-05"],
+        "val_mae": 4.0,
+        "git_sha": "fixture-sha",
         "model_note": "fixture bundle",
         "confidence": 0.8,
     }
@@ -112,28 +116,57 @@ class TestService:
         assert r.status_code == 200
         assert r.json()["status"] == "ok"
 
+    def test_ready(self, client):
+        r = client.get("/ready")
+        assert r.status_code == 200
+        assert r.json()["ready"] is True
+
+    def test_zones(self, client):
+        r = client.get("/zones")
+        assert r.status_code == 200
+        zones = r.json()["zones"]
+        assert len(zones) == 10
+        assert zones[0]["location_id"] == 1
+
+    def test_model_info(self, client):
+        r = client.get("/model-info")
+        assert r.status_code == 200
+        body = r.json()
+        assert body["model_version"] == "fixture-sha"
+        assert body["val_mae"] == 4.0
+        assert body["trained_through"] == "2021-12"
+
     def test_predict_ok(self, client):
         r = client.post("/predict", json={
-            "pu_zone": 1, "do_zone": 2,
+            "pickup_zone_id": 1, "dropoff_zone_id": 2,
             "pickup_datetime": "2019-07-04T08:30:00",
         })
         assert r.status_code == 200
         body = r.json()
-        assert body["predicted_minutes"] > 0
-        assert body["interval_low_minutes"] <= body["predicted_minutes"]
-        assert body["interval_high_minutes"] >= body["predicted_minutes"]
-        assert "late-2021" in body["model_note"] or "fixture" in body["model_note"]
+        assert body["minutes"] > 0
+        assert body["interval_80"]["low"] <= body["minutes"]
+        assert body["interval_80"]["high"] >= body["minutes"]
+        assert body["model_version"] == "fixture-sha"
+        assert body["route"] is None
 
     def test_predict_rejects_out_of_range_zone(self, client):
         r = client.post("/predict", json={
-            "pu_zone": 999, "do_zone": 2,
+            "pickup_zone_id": 999, "dropoff_zone_id": 2,
+            "pickup_datetime": "2019-07-04T08:30:00",
+        })
+        assert r.status_code == 422
+
+    def test_predict_rejects_zone_264(self, client):
+        # 264/265 are external zones outside the valid 1..263 range.
+        r = client.post("/predict", json={
+            "pickup_zone_id": 264, "dropoff_zone_id": 2,
             "pickup_datetime": "2019-07-04T08:30:00",
         })
         assert r.status_code == 422
 
     def test_predict_rejects_bad_datetime(self, client):
         r = client.post("/predict", json={
-            "pu_zone": 1, "do_zone": 2,
+            "pickup_zone_id": 1, "dropoff_zone_id": 2,
             "pickup_datetime": "not-a-date",
         })
         assert r.status_code == 422
@@ -148,5 +181,7 @@ class TestService:
         from nyc_eta.service import PredictRequest
 
         fields = set(PredictRequest.model_fields)
-        assert fields == {"pu_zone", "do_zone", "pickup_datetime"}
+        assert fields == {
+            "pickup_zone_id", "dropoff_zone_id", "pickup_datetime"
+        }
         assert not (fields & config.FORBIDDEN_FEATURES)

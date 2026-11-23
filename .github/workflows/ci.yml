@@ -92,8 +92,12 @@ jobs:
             sleep 2
           done
           curl -sf http://localhost:8000/health
+          curl -sf http://localhost:8000/ready
+          curl -sf http://localhost:8000/zones | grep -q '"zones"'
+          curl -sf http://localhost:8000/model-info | grep -q 'model_version'
           curl -sf http://localhost:8000/ | grep -qi "NYC Taxi"
           curl -sf -X POST http://localhost:8000/predict \
             -H 'Content-Type: application/json' \
-            -d '{"pu_zone": 1, "do_zone": 2, "pickup_datetime": "2019-07-04T08:30:00"}'
+            -d '{"pickup_zone_id": 1, "dropoff_zone_id": 2, "pickup_datetime": "2019-07-04T08:30:00"}' \
+            | grep -q '"minutes"'
           docker rm -f nyc

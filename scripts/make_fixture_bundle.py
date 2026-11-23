@@ -130,6 +130,10 @@ def main() -> None:
         "zone_shapefile_zip": "taxi_zones.zip",
         "distance_table": "distances.npz",
         "trained_through": "fixture",
+        "trained_months": ["fixture"],
+        "validation_months": ["fixture"],
+        "val_mae": None,
+        "git_sha": "fixture",
         "model_note": "Fixture bundle for CI smoke tests; not a real model.",
         "confidence": 0.8,
     }

@@ -1,8 +1,16 @@
 """FastAPI prediction service.
 
 Loads a served model bundle (booster + zone info + road distances +
-conformal interval + metadata) and exposes /health and /predict, and
-serves the built website at /.
+conformal interval + metadata) and exposes the brief's contract:
+
+  GET  /health
+  GET  /ready
+  GET  /zones
+  GET  /model-info
+  POST /predict  {pickup_zone_id, dropoff_zone_id, pickup_datetime}
+                 -> {minutes, interval_80, model_version, route?}
+
+and serves the built website at /.
 """
 
 from __future__ import annotations
@@ -29,21 +37,20 @@ from nyc_eta.features import (
 )
 from nyc_eta.models import expm1_pred, load_booster
 from nyc_eta.routing import distance_dict, load_distance_table
-from nyc_eta.zones import build_zone_table
+from nyc_eta.zones import ZoneInfo, build_zone_table
 
 
 class PredictRequest(BaseModel):
-    pu_zone: int = Field(ge=1, le=config.N_ZONES)
-    do_zone: int = Field(ge=1, le=config.N_ZONES)
+    pickup_zone_id: int = Field(ge=1, le=config.N_ZONES)
+    dropoff_zone_id: int = Field(ge=1, le=config.N_ZONES)
     pickup_datetime: str
 
 
 class PredictResponse(BaseModel):
-    predicted_minutes: float
-    interval_low_minutes: float
-    interval_high_minutes: float
-    confidence: float
-    model_note: str
+    minutes: float
+    interval_80: dict[str, float]
+    model_version: str
+    route: dict[str, Any] | None = None
 
 
 @dataclass
@@ -78,6 +85,16 @@ def load_served_model(bundle_dir: Path) -> ServedModel:
     )
 
 
+def _zone_json(info: ZoneInfo) -> dict[str, Any]:
+    return {
+        "location_id": info.location_id,
+        "zone": info.zone,
+        "borough": info.borough,
+        "lat": info.lat,
+        "lon": info.lon,
+    }
+
+
 def create_app(bundle_dir: Path | None = None,
                web_dist: Path | None = None) -> FastAPI:
     bundle = bundle_dir or Path(os.environ.get("NYC_ETA_BUNDLE", "model_bundle"))
@@ -89,11 +106,44 @@ def create_app(bundle_dir: Path | None = None,
     @app.get("/health")
     def health() -> dict[str, Any]:
         return {"status": "ok",
-                "model_trained_through": served.metadata.get("trained_through"),
+                "model_version": served.metadata.get("git_sha", "unknown"),
+                "trained_through": served.metadata.get("trained_through"),
                 "n_zones": len(served.builder.zone_infos)}
+
+    @app.get("/ready")
+    def ready() -> dict[str, Any]:
+        return {"ready": True,
+                "model_version": served.metadata.get("git_sha", "unknown")}
+
+    @app.get("/zones")
+    def zones() -> dict[str, Any]:
+        return {"zones": [
+            _zone_json(info) for info in served.builder.zone_infos.values()
+        ]}
+
+    @app.get("/model-info")
+    def model_info() -> dict[str, Any]:
+        meta = served.metadata
+        return {
+            "model_version": meta.get("git_sha", "unknown"),
+            "trained_through": meta.get("trained_through"),
+            "trained_months": meta.get("trained_months"),
+            "validation_months": meta.get("validation_months"),
+            "val_mae": meta.get("val_mae"),
+            "best_iteration": served.best_iteration,
+            "conformal_alpha": served.interval.alpha,
+            "conformal_q": served.interval.q,
+            "n_zones": len(served.builder.zone_infos),
+        }
 
     @app.post("/predict", response_model=PredictResponse)
     def predict(req: PredictRequest) -> PredictResponse:
+        infos = served.builder.zone_infos
+        if (req.pickup_zone_id not in infos
+                or req.dropoff_zone_id not in infos):
+            raise HTTPException(
+                422, "unknown zone id; valid LocationIDs are 1..263"
+            )
         try:
             pickup = pd.Timestamp(req.pickup_datetime)
         except Exception as exc:
@@ -104,7 +154,7 @@ def create_app(bundle_dir: Path | None = None,
             pickup = pickup.tz_convert("America/New_York")
 
         feats = served.builder.features_for_zones(
-            req.pu_zone, req.do_zone, pickup
+            req.pickup_zone_id, req.dropoff_zone_id, pickup
         )
         # Explicitly drop anything that could be a post-trip field.
         assert_no_leakage(list(feats.keys()))
@@ -117,13 +167,13 @@ def create_app(bundle_dir: Path | None = None,
         pred_min = float(expm1_pred(np.asarray(log_pred))[0])
         lo, hi = predict_interval(np.asarray(log_pred), served.interval)
         return PredictResponse(
-            predicted_minutes=round(pred_min, 2),
-            interval_low_minutes=round(float(lo[0]), 2),
-            interval_high_minutes=round(float(hi[0]), 2),
-            confidence=float(served.metadata.get("confidence", 0.8)),
-            model_note=str(served.metadata.get(
-                "model_note",
-                "Predictions reflect late-2021 traffic patterns.")),
+            minutes=round(pred_min, 2),
+            interval_80={
+                "low": round(float(lo[0]), 2),
+                "high": round(float(hi[0]), 2),
+            },
+            model_version=str(served.metadata.get("git_sha", "unknown")),
+            route=None,
         )
 
     if dist.exists():

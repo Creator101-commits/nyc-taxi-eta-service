@@ -44,23 +44,22 @@ async function tryLivePrediction(): Promise<void> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        pu_zone: 161, // Midtown
-        do_zone: 132, // JFK
+        pickup_zone_id: 161, // Midtown
+        dropoff_zone_id: 132, // JFK
         pickup_datetime: new Date().toISOString(),
       }),
     });
     if (!res.ok) return;
     const data = (await res.json()) as {
-      predicted_minutes: number;
-      interval_low_minutes: number;
-      interval_high_minutes: number;
-      model_note: string;
+      minutes: number;
+      interval_80: { low: number; high: number };
+      model_version: string;
     };
     body.innerHTML =
-      `<div class="big">${formatMinutes(data.predicted_minutes)}</div>` +
-      `<div>80% interval: ${formatMinutes(data.interval_low_minutes)} - ` +
-      `${formatMinutes(data.interval_high_minutes)}</div>` +
-      `<div style="color:var(--muted)">${data.model_note}</div>`;
+      `<div class="big">${formatMinutes(data.minutes)}</div>` +
+      `<div>80% interval: ${formatMinutes(data.interval_80.low)} - ` +
+      `${formatMinutes(data.interval_80.high)}</div>` +
+      `<div style="color:var(--muted)">model ${data.model_version.slice(0, 7)}</div>`;
     card.hidden = false;
   } catch {
     // Static site without the API: leave the card hidden.

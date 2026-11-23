@@ -238,6 +238,12 @@ def run_experiment(
             })
     log.mark("model_grid", t0)
 
+    # --- zone-pair baseline reference (train-only fit, val-scored) -----
+    base = models.ZonePairBaseline().fit(train_df)
+    baseline_val_mae = metrics.mae(
+        val_df["minutes"].to_numpy(), base.predict(val_df)
+    )
+
     # --- conformal on validation residuals ------------------------------
     val_pred_min = models.predict_minutes(best, val_df)
     interval = fit_conformal(
@@ -282,6 +288,7 @@ def run_experiment(
         },
         "conformal": {"alpha": interval.alpha, "q": interval.q,
                       "val_coverage": val_coverage},
+        "baseline_val_mae": baseline_val_mae,
         "drift_thresholds": thresholds,
         "val_signals": [
             {"month": m, **{k: getattr(s, k) for k in config.DRIFT_SIGNALS}}
@@ -385,12 +392,10 @@ def run_experiment(
             return model.predict(fdf)
         raise TypeError(f"unknown model type: {type(model)!r}")
 
-    # static baseline model for comparison
-    base = models.ZonePairBaseline().fit(train_df)
     pol_results = policies.simulate_policies(
         deploy_months, month_data, labeled_pool,
         fit_fn=fit_fn, predict_fn=predict_fn,
-        static_model=base, signal_thresholds=thresholds,
+        static_model=best, signal_thresholds=thresholds,
     )
     log.mark("policies", t0)
 
@@ -484,6 +489,7 @@ def run_experiment(
         "model_grid": grid_records,
         "selected": plan["selected"],
         "conformal": plan["conformal"],
+        "baseline_val_mae": baseline_val_mae,
         "drift_thresholds": thresholds,
         "drift_report": drift_report,
         "monthly_metrics": monthly_records,
@@ -626,6 +632,9 @@ def _train_served_model(
         "zone_shapefile_zip": "taxi_zones.zip",
         "distance_table": "distances.npz",
         "trained_through": "2021-12",
+        "trained_months": config.SERVED_TRAIN_MONTHS,
+        "validation_months": config.VALIDATION_MONTHS,
+        "val_mae": float(best.val_mae),
         "model_note": (
             "Served model trained on 2021-10..2021-12; predictions "
             "reflect late-2021 traffic patterns."

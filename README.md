@@ -99,11 +99,15 @@ uv run python scripts/make_fixture_bundle.py model_bundle
 uv run nyc-eta serve --host 0.0.0.0 --port 8000
 ```
 
-- `GET /health` -> service status and model metadata.
-- `POST /predict` with `{pu_zone, do_zone, pickup_datetime}` ->
-  `predicted_minutes`, `interval_low_minutes`, `interval_high_minutes`,
-  `confidence`, `model_note`. Zone IDs outside 1..263 and malformed
-  datetimes are rejected; post-trip fields cannot be supplied.
+- `GET /health`, `GET /ready` -> service status and model version.
+- `GET /zones` -> all 265 zone records (id, name, borough, lat, lon).
+- `GET /model-info` -> training window, validation metrics, git sha.
+- `POST /predict` with `{pickup_zone_id, dropoff_zone_id,
+  pickup_datetime}` -> `{minutes, interval_80: {low, high},
+  model_version, route}`. Zone IDs outside 1..263 (422), unknown zones
+  and malformed datetimes are rejected; post-trip fields cannot be
+  supplied. `route` is reserved and currently null: the service serves
+  zone-centroid distances, not turn-by-turn geometry.
 - The image serves the API and the built site at `/`:
 
 ```bash
