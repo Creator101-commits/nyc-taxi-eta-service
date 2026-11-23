@@ -11,7 +11,8 @@ retraining beat a static model and a fixed monthly schedule?**
 ## Status
 
 - Package, tests, CI, web app, Dockerfile and Kaggle kernels implemented.
-- Smoke kernel run in progress; the full benchmark has not been launched.
+- Smoke kernel verified (`ordering_ok`, manifest git_sha == launched
+  HEAD); the full benchmark has not been launched.
 - See `PLAN.md` for the task list and `REVIEW.md` for verification notes.
 
 ## Protocol (`nyc-taxi-eta-v1`, frozen in `src/nyc_eta/config.py`)
@@ -138,6 +139,29 @@ Kaggle kernels; nothing heavy runs on the laptop.
 Smoke-mode scores come from tiny samples and exercise the pipeline and
 gates only; they do not drive any configuration choice. The full run is
 launched only after the smoke report is reviewed.
+
+## Limitations and deviations
+
+- **`osm_base` is empty.** Every Overpass status endpoint tried during
+  the graph build returned errors or timeouts, so the dataset records
+  an empty `osm_base`. The GraphML itself was downloaded and hashed
+  successfully; only the freshness timestamp is missing.
+- **Smoke kernel is a pipeline check, not a benchmark.** It uses 3
+  months x 20,000 rows, `n_boot=50`, and skips SHAP and served-model
+  training. With a single deployment month the Spearman correlations
+  and alarm recall are undefined (NaN) and the web `trips.json` /
+  `routes.json` export is empty, because the demo days
+  (2019-10-01, 2020-04-07) are not in the smoke deploy month.
+- **Web data files are fixtures until the full run.**
+  `web/public/data/` holds small synthetic files so the site builds and
+  tests offline; the full kernel overwrites them with real output.
+- **`/predict` returns `route: null`.** The API contract reserves the
+  field; the service scores zone-centroid features and does not compute
+  turn-by-turn geometry.
+- **Study window chosen with hindsight** to include the COVID shock;
+  disclosed here and in PLAN.md.
+- **Docker image is verified in CI only**; Docker is not installed
+  locally.
 
 ## Development
 

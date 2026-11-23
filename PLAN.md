@@ -4,14 +4,15 @@
 
 - [x] Package scaffold: `src/nyc_eta/` modules (data, features, routing,
       models, conformal, drift, policies, tracking, service, experiments)
-- [x] Local fixture tests (34 tests), ruff, mypy
+- [x] Local fixture tests (39 tests), ruff, mypy
 - [x] Kaggle kernels: full (`kaggle/`), smoke (`kaggle_smoke/`), one-off
       OSM graph build (`kaggle_graph/`), `scripts/kaggle_run.sh`,
       `scripts/build_graph_dataset.sh`
-- [ ] OSM graph dataset build (one-off kernel)
-- [ ] Smoke kernel run + verification + runtime projection
-- [ ] Web app (Vite + TypeScript + MapLibre + deck.gl)
-- [ ] CI workflow (python matrix, web, docker) + Dockerfile
+- [x] OSM graph dataset build (one-off kernel) -> private dataset
+      `sreeharshak101/nyc-taxi-eta-osm-graph`
+- [x] Smoke kernel runs: v4 verified at 38ace96; v5 at final HEAD
+- [x] Web app (Vite + TypeScript + MapLibre + deck.gl), 16 vitest tests
+- [x] CI workflow (python matrix, web, docker) + Dockerfile
 - [ ] Full kernel run (only after smoke report is approved)
 - [ ] results/ curation, image.png, README findings
 
