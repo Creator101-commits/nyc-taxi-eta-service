@@ -52,9 +52,11 @@ retraining beat a static model and a fixed monthly schedule?**
   validation residuals.
 - **Drift signals (label-free):** Evidently `DataDriftPreset`
   drifted-feature share, prediction-distribution Wasserstein distance,
-  trip-volume ratio. Each signal's alarm threshold is the maximum over
-  the two validation months (pre-specified). A month is degraded when its
-  MAE exceeds validation MAE by more than 10%.
+  trip-volume ratio (month cleaned-trip count over the mean monthly
+  train cleaned count, so real demand drops register). Each signal's
+  alarm threshold is the maximum over the two validation months
+  (pre-specified). A month is degraded when its MAE exceeds validation
+  MAE by more than 10%.
 - **Policies:** static model; monthly retrain on the trailing three
   labeled months; drift-triggered retrain on the same window only when
   the previous month's signals alarmed. Labels arrive one month late for
@@ -87,7 +89,10 @@ see https://www.openstreetmap.org/copyright.
 zone polygons, animated taxis moving along **illustrative** routes (the
 OSM drive-graph shortest paths between zone centroids; TLC data has
 zones and timestamps, not GPS traces), a deployment-drift chart and a
-live prediction card backed by `/predict` when the API is running.
+live prediction card backed by `/predict` when the API is running. A
+successful prediction highlights the two zones with a dashed
+straight-line connector labeled "straight-line connector, not a
+route"; road geometry appears only on the replay trips.
 
 The served model is trained on 2021-10..2021-12, so predictions reflect
 late-2021 traffic patterns.

@@ -4,9 +4,10 @@ import { TripsLayer } from "@deck.gl/geo-layers";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./style.css";
 
-import { loadSiteData, type SiteData } from "./data";
+import { loadSiteData, type SiteData, type ZoneCollection } from "./data";
 import { LOOP_MS, buildTripRecords, type TripRecord } from "./trips";
 import { buildDriftChart, renderDriftChartSvg } from "./driftchart";
+import { predictionOverlay } from "./prediction";
 import { formatMinutes } from "./format";
 
 const DARK_STYLE: maplibregl.StyleSpecification = {
@@ -35,7 +36,62 @@ function routesToGeoJSON(routes: SiteData["routes"]) {
   };
 }
 
-async function tryLivePrediction(): Promise<void> {
+const PRED_PU_ZONE = 161; // Midtown
+const PRED_DO_ZONE = 132; // JFK
+
+function addPredictionOverlay(
+  map: maplibregl.Map,
+  zones: ZoneCollection,
+): void {
+  const overlay = predictionOverlay(zones, PRED_PU_ZONE, PRED_DO_ZONE);
+  if (!overlay) return;
+  map.addSource("pred-zones", { type: "geojson", data: overlay.zones });
+  map.addSource("pred-link", { type: "geojson", data: overlay.link });
+  map.addSource("pred-label", { type: "geojson", data: overlay.label });
+  map.addLayer({
+    id: "pred-zones-fill",
+    type: "fill",
+    source: "pred-zones",
+    paint: { "fill-color": "#f5b942", "fill-opacity": 0.4 },
+  });
+  map.addLayer({
+    id: "pred-zones-line",
+    type: "line",
+    source: "pred-zones",
+    paint: { "line-color": "#f5b942", "line-width": 1.4 },
+  });
+  map.addLayer({
+    id: "pred-link-line",
+    type: "line",
+    source: "pred-link",
+    paint: {
+      "line-color": "#ffd166",
+      "line-width": 2,
+      "line-opacity": 0.9,
+      "line-dasharray": [2, 1.6],
+    },
+  });
+  map.addLayer({
+    id: "pred-label",
+    type: "symbol",
+    source: "pred-label",
+    layout: {
+      "text-field": ["get", "label"],
+      "text-size": 11,
+      "text-offset": [0, 1.4],
+    },
+    paint: {
+      "text-color": "#c8d3e8",
+      "text-halo-color": "#0b0e14",
+      "text-halo-width": 1.2,
+    },
+  });
+}
+
+async function tryLivePrediction(
+  map: maplibregl.Map,
+  zones: ZoneCollection,
+): Promise<void> {
   const card = document.getElementById("prediction-card");
   const body = document.getElementById("prediction-body");
   if (!card || !body) return;
@@ -44,8 +100,8 @@ async function tryLivePrediction(): Promise<void> {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        pickup_zone_id: 161, // Midtown
-        dropoff_zone_id: 132, // JFK
+        pickup_zone_id: PRED_PU_ZONE,
+        dropoff_zone_id: PRED_DO_ZONE,
         pickup_datetime: new Date().toISOString(),
       }),
     });
@@ -61,6 +117,7 @@ async function tryLivePrediction(): Promise<void> {
       `${formatMinutes(data.interval_80.high)}</div>` +
       `<div style="color:var(--muted)">model ${data.model_version.slice(0, 7)}</div>`;
     card.hidden = false;
+    addPredictionOverlay(map, zones);
   } catch {
     // Static site without the API: leave the card hidden.
   }
@@ -160,10 +217,11 @@ async function main(): Promise<void> {
       requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
+
+    void tryLivePrediction(map, data.zones);
   });
 
   renderDrift(data.drift);
-  void tryLivePrediction();
 }
 
 void main();
