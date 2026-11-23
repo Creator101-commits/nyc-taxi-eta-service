@@ -524,7 +524,7 @@ def run_experiment(
         monthly_records, deploy_months, graphml_path, zone_infos,
         static_model=best, pol_results=pol_results,
         thresholds=thresholds, val_mae=val_mae,
-        clean_counts=clean_counts, sample_n=sample_n,
+        clean_counts=clean_counts,
     )
     log.mark("web_export", t0)
 
@@ -810,7 +810,6 @@ def _export_web_data(
     thresholds: dict[str, float],
     val_mae: float,
     clean_counts: dict[str, dict[str, int]],
-    sample_n: int,
     route_fn: Any = None,
 ) -> dict[str, Any]:
     """Write the static data files the website loads.
@@ -888,7 +887,10 @@ def _export_web_data(
     for tag, (month, day_df) in day_frames.items():
         n_sampled = len(day_df)
         cleaned_n = int(clean_counts[month]["dropoff_after_pickup"])
-        est = int(round(n_sampled * cleaned_n / sample_n))
+        # Scale by this month's actual sampled row count, which equals
+        # sample_n in the full run but can differ for small months.
+        month_n = len(feats[month])
+        est = int(round(n_sampled * cleaned_n / month_n))
         est_real[tag] = est
         days_meta[tag] = {
             "date": config.DEMO_DAYS[tag],

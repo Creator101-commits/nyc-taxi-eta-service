@@ -219,7 +219,7 @@ class TestWebExport:
                 "2019-10": {"dropoff_after_pickup": 1_000_000},
                 "2020-04": {"dropoff_after_pickup": 250_000},
             },
-            sample_n=1000, route_fn=stub_routes,
+            route_fn=stub_routes,
         )
         return tmp_path / "web", meta, calls
 
@@ -229,15 +229,17 @@ class TestWebExport:
         web, meta, calls = self._call(tmp_path, builder, zone_infos)
         trips = json.loads((web / "trips.json").read_text())
         days = trips["days"]
-        # est_real = n_sampled_day * cleaned_n_month / sample_n_month
-        assert days["pre"]["est_real_trips"] == 100_000
+        # est_real = n_sampled_day * cleaned_n_month / len(feats[month]);
+        # the frames hold 100 (pre) and 200 (covid) rows, fewer than any
+        # nominal sample size, so the actual count drives the estimate.
+        assert days["pre"]["est_real_trips"] == 1_000_000
         assert days["pre"]["n_exported"] == 100
-        assert days["pre"]["real_trips_per_taxi"] == pytest.approx(1000.0)
-        assert days["covid"]["est_real_trips"] == 50_000
-        # covid exports round(100 * 50000/100000) = 50 trips
-        assert days["covid"]["n_exported"] == 50
-        assert days["covid"]["real_trips_per_taxi"] == pytest.approx(1000.0)
-        assert len(trips["trips"]["covid"]) == 50
+        assert days["pre"]["real_trips_per_taxi"] == pytest.approx(10_000.0)
+        assert days["covid"]["est_real_trips"] == 250_000
+        # covid exports round(100 * 250000/1000000) = 25 trips
+        assert days["covid"]["n_exported"] == 25
+        assert days["covid"]["real_trips_per_taxi"] == pytest.approx(10_000.0)
+        assert len(trips["trips"]["covid"]) == 25
         row = trips["trips"]["pre"][0]
         assert set(row) == {"pu", "do", "minute", "minutes", "pred_minutes"}
         assert row["minutes"] > 0 and row["pred_minutes"] > 0
