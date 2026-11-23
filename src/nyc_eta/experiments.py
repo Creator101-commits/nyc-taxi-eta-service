@@ -253,6 +253,7 @@ def run_experiment(
     val_coverage = empirical_coverage(
         val_df["minutes"].to_numpy(), val_pred_min, interval
     )
+    val_borough_slices = metrics.borough_slices(val_df, val_pred_min)
 
     # --- label-free drift signals on validation months ------------------
     t0 = time.time()
@@ -296,6 +297,7 @@ def run_experiment(
         "conformal": {"alpha": interval.alpha, "q": interval.q,
                       "val_coverage": val_coverage},
         "baseline_val_mae": baseline_val_mae,
+        "val_borough_slices": val_borough_slices,
         "drift_thresholds": thresholds,
         "volume_ref_monthly_mean": ref_monthly_mean,
         "val_signals": [
@@ -332,7 +334,7 @@ def run_experiment(
     val_mae = best.val_mae
 
     month_data: dict[str, policies.MonthData] = {}
-    boot_frames: dict[str, pd.DataFrame] = {}
+    deploy_dates: dict[str, np.ndarray] = {}
     for m in deploy_months:
         fdf = feats[m]
         pred = models.predict_minutes(best, fdf)
@@ -341,19 +343,18 @@ def run_experiment(
             cur_n=deploy_volume_n[m],
         )
         deploy_signals[m] = sig
-        mae_m = metrics.mae(fdf["minutes"].to_numpy(), pred)
+        y_m = fdf["minutes"].to_numpy()
+        mae_m = metrics.mae(y_m, pred)
         degraded[m] = bool(mae_m > config.DEGRADED_MAE_RATIO * val_mae)
         monthly_records[m] = {
             "mae": mae_m,
-            "rmse": metrics.rmse(fdf["minutes"].to_numpy(), pred),
-            "median_ape": metrics.median_ape(
-                fdf["minutes"].to_numpy(), pred
-            ),
+            "rmse": metrics.rmse(y_m, pred),
+            "median_ape": metrics.median_ape(y_m, pred),
             "n": len(fdf),
             "cleaned_n": int(deploy_volume_n[m]),
-            "coverage": empirical_coverage(
-                fdf["minutes"].to_numpy(), pred, interval
-            ),
+            "baseline_mae": metrics.mae(y_m, base.predict(fdf)),
+            "borough_mae": metrics.borough_slices(fdf, pred),
+            "coverage": empirical_coverage(y_m, pred, interval),
             "signals": {k: getattr(sig, k) for k in config.DRIFT_SIGNALS},
             "signal_alarms": drift.signal_alarms(sig, thresholds),
             "degraded": degraded[m],
@@ -361,13 +362,10 @@ def run_experiment(
         month_data[m] = policies.MonthData(
             month=m,
             features=fdf[["minutes"] + config.FEATURE_COLUMNS],
-            minutes=fdf["minutes"].to_numpy(),
+            minutes=y_m,
             signals=sig,
         )
-        boot_frames[m] = pd.DataFrame({
-            "date": fdf["pickup"].dt.date,
-            "ae": np.abs(fdf["minutes"].to_numpy() - pred),
-        })
+        deploy_dates[m] = fdf["pickup"].dt.floor("D").to_numpy()
     log.mark("deploy_eval", t0)
 
     # --- retraining policies ---------------------------------------------
@@ -418,11 +416,24 @@ def run_experiment(
     deploy_list = list(deploy_months)
     maes = [monthly_records[m]["mae"] for m in deploy_list]
     val_mae_ratio = [m / val_mae for m in maes]
+
+    def _spearman_lagged(xs: list[float], lag: int) -> float:
+        # lag +1: signal at t vs MAE ratio at t+1 (signal leads error);
+        # lag -1: signal at t vs MAE ratio at t-1; lag 0 is contemporaneous.
+        if lag == 0:
+            return metrics.spearman(xs, val_mae_ratio)
+        if lag == 1:
+            return metrics.spearman(xs[:-1], val_mae_ratio[1:])
+        return metrics.spearman(xs[1:], val_mae_ratio[:-1])
+
     drift_report: dict[str, Any] = {}
     for sig_name in config.DRIFT_SIGNALS:
         xs = [getattr(deploy_signals[m], sig_name) for m in deploy_list]
         drift_report[sig_name] = {
             "spearman_vs_mae_ratio": metrics.spearman(xs, val_mae_ratio),
+            "spearman_lagged": {
+                str(lag): _spearman_lagged(xs, lag) for lag in (-1, 0, 1)
+            },
             "values": {m: float(getattr(deploy_signals[m], sig_name))
                        for m in deploy_list},
         }
@@ -433,6 +444,33 @@ def run_experiment(
     drift_report["alarm_scores"] = metrics.alarm_scores(
         [degraded[m] for m in deploy_list], all_alarms
     )
+
+    # Post-hoc sensitivity (never used by any policy): two-sided volume
+    # alarm outside the validation months' [min, max] range, combined
+    # with the unchanged one-sided drift_share / pred_wasserstein rules.
+    val_vol = [s.volume_ratio for s in val_signals]
+    vol_low, vol_high = min(val_vol), max(val_vol)
+    two_sided: dict[str, bool] = {}
+    posthoc_alarms: list[bool] = []
+    for m in deploy_list:
+        sig = deploy_signals[m]
+        vol_out = not (vol_low <= sig.volume_ratio <= vol_high)
+        alarms = drift.signal_alarms(sig, thresholds)
+        two_sided[m] = bool(vol_out)
+        posthoc_alarms.append(
+            bool(vol_out or alarms["drift_share"]
+                 or alarms["pred_wasserstein"])
+        )
+    drift_report["posthoc_two_sided_volume"] = {
+        "label": "post-hoc sensitivity; not used by any policy",
+        "rule": "volume alarm when outside [min, max] of the validation months",
+        "low": float(vol_low),
+        "high": float(vol_high),
+        "alarm_months": [m for m in deploy_list if two_sided[m]],
+        "alarm_scores": metrics.alarm_scores(
+            [degraded[m] for m in deploy_list], posthoc_alarms
+        ),
+    }
 
     # --- policy summaries --------------------------------------------------
     policy_summary: dict[str, Any] = {}
@@ -445,11 +483,15 @@ def run_experiment(
             "retrain_months": res.retrain_months,
         }
 
-    # --- day-cluster bootstrap CI on monthly MAE (static model) ----------
+    # --- paired day-cluster bootstrap over policy monthly MAE -----------
     t0 = time.time()
-    n_boot = 50 if smoke else 500
-    bootstrap = metrics.day_cluster_bootstrap(
-        boot_frames, n_boot=n_boot, seed=0
+    ae_by_policy = {
+        name: {m: res.monthly_ae[m] for m in deploy_list
+               if m in res.monthly_ae}
+        for name, res in pol_results.items()
+    }
+    bootstrap = metrics.paired_day_cluster_bootstrap(
+        ae_by_policy, deploy_dates, n_boot=1000, seed=0
     )
     log.mark("bootstrap", t0)
 

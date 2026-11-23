@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from nyc_eta import config, drift, models, policies
+from nyc_eta import config, drift, metrics, models, policies
 from nyc_eta.conformal import (
     ConformalInterval,
     empirical_coverage,
@@ -117,6 +117,70 @@ class TestDrift:
         assert alarms["drift_share"] and alarms["pred_wasserstein"]
         assert not alarms["volume_ratio"]
         assert drift.any_alarm(alarms)
+
+
+class TestPairedBootstrap:
+    def _inputs(self):
+        # 2 months x 3 days x 4 rows; deterministic errors per day.
+        dates = {
+            "2019-07": np.array(
+                [np.datetime64("2019-07-01")] * 4
+                + [np.datetime64("2019-07-02")] * 4
+                + [np.datetime64("2019-07-03")] * 4
+            ),
+            "2019-08": np.array(
+                [np.datetime64("2019-08-01")] * 4
+                + [np.datetime64("2019-08-02")] * 4
+                + [np.datetime64("2019-08-03")] * 4
+            ),
+        }
+        ae = {
+            p: {
+                m: np.full(12, v, dtype=float)
+                for m, v in month_vals.items()
+            }
+            for p, month_vals in {
+                "static": {"2019-07": 2.0, "2019-08": 4.0},
+                "monthly": {"2019-07": 1.0, "2019-08": 3.0},
+                "drift": {"2019-07": 2.0, "2019-08": 4.0},
+            }.items()
+        }
+        return ae, dates
+
+    def test_seed_determinism(self):
+        ae, dates = self._inputs()
+        a = metrics.paired_day_cluster_bootstrap(ae, dates, n_boot=50)
+        b = metrics.paired_day_cluster_bootstrap(ae, dates, n_boot=50)
+        assert a == b
+
+    def test_point_equals_mean_of_monthly_maes(self):
+        ae, dates = self._inputs()
+        out = metrics.paired_day_cluster_bootstrap(ae, dates, n_boot=20)
+        # static monthly MAEs are 2.0 and 4.0 -> point 3.0
+        assert out["policies"]["static"]["point"] == pytest.approx(3.0)
+        assert out["policies"]["monthly"]["point"] == pytest.approx(2.0)
+        assert out["diffs"]["monthly-static"]["point"] == pytest.approx(-1.0)
+
+    def test_pairing_identical_policies_zero_diff(self):
+        ae, dates = self._inputs()
+        # drift identical to static -> drift-static diff is exactly 0
+        out = metrics.paired_day_cluster_bootstrap(ae, dates, n_boot=50)
+        d = out["diffs"]["drift-static"]
+        assert d["point"] == 0.0
+        assert d["ci_low"] == 0.0 and d["ci_high"] == 0.0
+        assert d["share_below_zero"] == 0.0
+        # monthly is uniformly better -> monthly-static always < 0
+        d2 = out["diffs"]["monthly-static"]
+        assert d2["share_below_zero"] == 1.0
+
+    def test_single_day_months_degenerate_ci(self):
+        dates = {"2019-07": np.array([np.datetime64("2019-07-01")] * 4)}
+        ae = {"static": {"2019-07": np.array([1.0, 3.0, 2.0, 4.0])}}
+        out = metrics.paired_day_cluster_bootstrap(ae, dates, n_boot=30)
+        # one day -> every replicate identical -> CI collapses to point
+        assert out["policies"]["static"]["point"] == pytest.approx(2.5)
+        assert out["policies"]["static"]["ci_low"] == pytest.approx(2.5)
+        assert out["policies"]["static"]["ci_high"] == pytest.approx(2.5)
 
 
 class TestPolicies:

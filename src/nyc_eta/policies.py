@@ -38,6 +38,9 @@ class MonthData:
 class PolicyResult:
     name: str
     monthly_mae: dict[str, float] = field(default_factory=dict)
+    # Per-row absolute errors per month, aligned to the month's rows;
+    # feeds the paired day-cluster bootstrap.
+    monthly_ae: dict[str, np.ndarray] = field(default_factory=dict)
     n_retrains: int = 0
     retrain_months: list[str] = field(default_factory=list)
 
@@ -80,7 +83,9 @@ def simulate_policies(
 
         # static
         p_static = predict_fn(static_model, feats)
-        results["static"].monthly_mae[t] = float(np.mean(np.abs(y - p_static)))
+        ae_static = np.abs(y - p_static)
+        results["static"].monthly_ae[t] = ae_static
+        results["static"].monthly_mae[t] = float(np.mean(ae_static))
 
         # Trailing labeled months immediately before t (up to RETRAIN_WINDOW).
         avail = sorted(m for m in labeled_available if m < t)
@@ -94,9 +99,9 @@ def simulate_policies(
             results["monthly"].n_retrains += 1
             results["monthly"].retrain_months.append(t)
         p_monthly = predict_fn(monthly_model, feats)
-        results["monthly"].monthly_mae[t] = float(
-            np.mean(np.abs(y - p_monthly))
-        )
+        ae_monthly = np.abs(y - p_monthly)
+        results["monthly"].monthly_ae[t] = ae_monthly
+        results["monthly"].monthly_mae[t] = float(np.mean(ae_monthly))
 
         # drift: retrain only when the previous deploy month's label-free
         # signals alarmed (month t-1's signals vs frozen thresholds)
@@ -117,9 +122,9 @@ def simulate_policies(
             results["drift"].n_retrains += 1
             results["drift"].retrain_months.append(t)
         p_drift = predict_fn(drift_model, feats)
-        results["drift"].monthly_mae[t] = float(
-            np.mean(np.abs(y - p_drift))
-        )
+        ae_drift = np.abs(y - p_drift)
+        results["drift"].monthly_ae[t] = ae_drift
+        results["drift"].monthly_mae[t] = float(np.mean(ae_drift))
 
         # month t's labels become available for later windows
         labeled_available[t] = feats.assign(minutes=y)

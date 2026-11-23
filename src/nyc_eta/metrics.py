@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -75,44 +77,128 @@ def alarm_scores(
             "precision": precision, "recall": recall}
 
 
-def day_cluster_bootstrap(
-    frames: dict[str, pd.DataFrame],
-    n_boot: int = 500,
+def paired_day_cluster_bootstrap(
+    ae_by_policy: dict[str, dict[str, np.ndarray]],
+    dates_by_month: dict[str, np.ndarray],
+    n_boot: int = 1000,
     seed: int = 0,
-) -> dict[str, float]:
-    """Bootstrap CI for mean monthly MAE, resampling days (clusters).
+) -> dict[str, Any]:
+    """Paired day-cluster bootstrap over per-policy monthly MAE.
 
-    ``frames`` maps month -> DataFrame with columns ``date`` and ``ae``
-    (absolute error per row). Each resample draws dates with replacement
-    inside every month, recomputes that month's MAE over all rows of the
-    drawn dates, then averages the monthly MAEs.
+    ``ae_by_policy`` maps policy name -> month -> per-row absolute-error
+    array aligned to that month's rows; ``dates_by_month`` maps month ->
+    per-row dates aligned the same way. Each replicate draws every
+    month's days with replacement once and applies the same draw to all
+    policies, so policy differences are paired. A policy's statistic is
+    the mean over months of the month MAE, where a replicate month MAE
+    is summed drawn-day errors over summed drawn-day rows.
+
+    ``point`` equals the plain mean of the monthly MAEs exactly, and
+    diff points equal the differences of those.
     """
-    rng = np.random.default_rng(seed)
-    months = sorted(frames)
-    # Pre-group rows by date per month.
-    by_month: dict[str, dict[object, np.ndarray]] = {}
+    months = sorted(dates_by_month)
+    policies = sorted(ae_by_policy)
+
+    point_month = {
+        p: {m: float(np.mean(ae_by_policy[p][m])) for m in months}
+        for p in policies
+    }
+    point = {
+        p: float(np.mean([point_month[p][m] for m in months]))
+        for p in policies
+    }
+
+    # Per-day aggregates: shared row counts, per-policy error sums.
+    day_counts: dict[str, np.ndarray] = {}
+    day_sums: dict[str, dict[str, np.ndarray]] = {p: {} for p in policies}
+    n_days: dict[str, int] = {}
     for m in months:
-        df = frames[m]
-        by_month[m] = {
-            d: g["ae"].to_numpy()
-            for d, g in df.groupby("date", sort=False)
-        }
-    stats_out = []
-    for _ in range(n_boot):
-        month_maes = []
+        dates = np.asarray(dates_by_month[m])
+        _, inv = np.unique(dates, return_inverse=True)
+        day_counts[m] = np.bincount(inv).astype(np.float64)
+        n_days[m] = len(day_counts[m])
+        for p in policies:
+            ae = np.asarray(ae_by_policy[p][m], dtype=np.float64)
+            day_sums[p][m] = np.bincount(inv, weights=ae)
+
+    rng = np.random.default_rng(seed)
+    rep_policy = {p: np.full(n_boot, np.nan) for p in policies}
+    rep_static_month = {m: np.full(n_boot, np.nan) for m in months}
+    for b in range(n_boot):
+        month_mae: dict[str, dict[str, float]] = {p: {} for p in policies}
         for m in months:
-            days = list(by_month[m])
-            if not days:
+            nd = n_days[m]
+            if nd == 0:
                 continue
-            drawn = rng.choice(len(days), size=len(days), replace=True)
-            errs = np.concatenate([by_month[m][days[i]] for i in drawn])
-            month_maes.append(float(np.mean(errs)))
-        if month_maes:
-            stats_out.append(float(np.mean(month_maes)))
-    arr = np.asarray(stats_out)
+            drawn = rng.integers(0, nd, size=nd)
+            denom = float(day_counts[m][drawn].sum())
+            if denom <= 0:
+                continue
+            for p in policies:
+                month_mae[p][m] = float(
+                    day_sums[p][m][drawn].sum() / denom
+                )
+        for p in policies:
+            vals = [month_mae[p][m] for m in months if m in month_mae[p]]
+            if vals:
+                rep_policy[p][b] = float(np.mean(vals))
+        for m in months:
+            if m in month_mae.get("static", {}):
+                rep_static_month[m][b] = month_mae["static"][m]
+
+    def _ci(samples: np.ndarray) -> tuple[float, float]:
+        return (
+            float(np.quantile(samples, 0.025)),
+            float(np.quantile(samples, 0.975)),
+        )
+
+    out_policies: dict[str, dict[str, float]] = {}
+    for p in policies:
+        lo, hi = _ci(rep_policy[p])
+        out_policies[p] = {
+            "point": point[p],
+            "boot_mean": float(np.nanmean(rep_policy[p])),
+            "ci_low": lo,
+            "ci_high": hi,
+        }
+
+    diff_pairs = {
+        "monthly-static": ("monthly", "static"),
+        "drift-static": ("drift", "static"),
+        "drift-monthly": ("drift", "monthly"),
+    }
+    diffs: dict[str, dict[str, float]] = {}
+    for name, (pa, pb) in diff_pairs.items():
+        if pa not in rep_policy or pb not in rep_policy:
+            continue
+        samples = rep_policy[pa] - rep_policy[pb]
+        lo, hi = _ci(samples)
+        diffs[name] = {
+            "point": point[pa] - point[pb],
+            "boot_mean": float(np.nanmean(samples)),
+            "ci_low": lo,
+            "ci_high": hi,
+            "share_below_zero": float(np.nanmean(samples < 0)),
+        }
+
+    static_monthly_ci = {
+        m: {
+            "point": point_month["static"][m],
+            "ci_low": _ci(rep_static_month[m])[0],
+            "ci_high": _ci(rep_static_month[m])[1],
+        }
+        for m in months
+        if "static" in point_month
+    }
+
     return {
-        "mean": float(np.mean(arr)),
-        "ci_low": float(np.quantile(arr, 0.025)),
-        "ci_high": float(np.quantile(arr, 0.975)),
+        "method": (
+            "days resampled within each month, same draw for all "
+            "policies; conditional on the trained models"
+        ),
         "n_boot": n_boot,
+        "seed": seed,
+        "policies": out_policies,
+        "diffs": diffs,
+        "static_monthly_ci": static_monthly_ci,
     }
