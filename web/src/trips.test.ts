@@ -24,7 +24,9 @@ describe("routeKey", () => {
 });
 
 describe("tripToRecord", () => {
-  const trip: TripRow = { pu: 1, do: 2, minute: 600, pred_minutes: 30 };
+  const trip: TripRow = {
+    pu: 1, do: 2, minute: 600, minutes: 30, pred_minutes: 28,
+  };
 
   it("builds path and increasing timestamps", () => {
     const rec = tripToRecord(trip, routes);
@@ -38,12 +40,25 @@ describe("tripToRecord", () => {
   });
 
   it("returns null when the route is missing", () => {
-    expect(tripToRecord({ pu: 9, do: 9, minute: 0, pred_minutes: 5 }, routes)).toBeNull();
+    expect(
+      tripToRecord({ pu: 9, do: 9, minute: 0, minutes: 5, pred_minutes: 5 }, routes),
+    ).toBeNull();
+  });
+
+  it("animates with actual minutes, not predicted", () => {
+    const rec = tripToRecord(
+      { pu: 1, do: 2, minute: 0, minutes: 60, pred_minutes: 5 },
+      routes,
+    );
+    expect(rec!.minutes).toBe(60);
+    expect(rec!.pred_minutes).toBe(5);
+    const dur = rec!.timestamps[2] - rec!.timestamps[0];
+    expect(dur).toBeCloseTo((60 / 1440) * LOOP_MS, 5);
   });
 
   it("enforces a minimum trip duration", () => {
     const rec = tripToRecord(
-      { pu: 1, do: 2, minute: 0, pred_minutes: 0.001 },
+      { pu: 1, do: 2, minute: 0, minutes: 0.001, pred_minutes: 30 },
       routes,
     );
     expect(rec!.timestamps[2] - rec!.timestamps[0]).toBeGreaterThanOrEqual(
@@ -55,9 +70,9 @@ describe("tripToRecord", () => {
 describe("buildTripRecords", () => {
   it("skips trips without routes and caps the count", () => {
     const trips: TripRow[] = [
-      { pu: 1, do: 2, minute: 100, pred_minutes: 10 },
-      { pu: 7, do: 8, minute: 100, pred_minutes: 10 }, // no route
-      { pu: 1, do: 2, minute: 200, pred_minutes: 12 },
+      { pu: 1, do: 2, minute: 100, minutes: 10, pred_minutes: 10 },
+      { pu: 7, do: 8, minute: 100, minutes: 10, pred_minutes: 10 }, // no route
+      { pu: 1, do: 2, minute: 200, minutes: 12, pred_minutes: 12 },
     ];
     const recs = buildTripRecords(trips, routes, 1);
     expect(recs).toHaveLength(1);

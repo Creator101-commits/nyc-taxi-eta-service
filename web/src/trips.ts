@@ -6,7 +6,8 @@ import type { TripRow, RoutesFile } from "./data";
  * TripsLayer animates each trip along `path` between `timestamps`.
  * We compress a demo day into a LOOP_MS loop: a trip picking up at
  * minute m of the day starts at (m / 1440) * LOOP_MS and lasts
- * max(MIN_TRIP_MS, pred_minutes / 1440 * LOOP_MS).
+ * max(MIN_TRIP_MS, minutes / 1440 * LOOP_MS), where minutes is the
+ * trip's ACTUAL duration.
  */
 
 export const LOOP_MS = 120_000;
@@ -20,6 +21,7 @@ export interface TripRecord {
   /** display metadata kept alongside (not used by the layer) */
   pu: number;
   do: number;
+  minutes: number;
   pred_minutes: number;
 }
 
@@ -39,7 +41,7 @@ export function tripToRecord(
   if (!path || path.length < 2) return null;
 
   const start = (trip.minute / 1440) * LOOP_MS;
-  const rawDur = (trip.pred_minutes / 1440) * LOOP_MS;
+  const rawDur = (trip.minutes / 1440) * LOOP_MS;
   const dur = Math.max(MIN_TRIP_MS, rawDur);
 
   // Distribute timestamps evenly along the path vertices.
@@ -54,6 +56,7 @@ export function tripToRecord(
     timestamps,
     pu: trip.pu,
     do: trip.do,
+    minutes: trip.minutes,
     pred_minutes: trip.pred_minutes,
   };
 }

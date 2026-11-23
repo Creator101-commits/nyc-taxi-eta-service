@@ -83,3 +83,16 @@ main { flex: 1; display: flex; min-height: 0; }
 
 #drift-chart svg { width: 100%; height: auto; display: block; }
 #drift-caption { margin-top: 8px; }
+
+#trip-tooltip {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  background: #141a26;
+  border: 1px solid #33507e;
+  color: #c8d3e8;
+  font-size: 11px;
+  padding: 3px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+}

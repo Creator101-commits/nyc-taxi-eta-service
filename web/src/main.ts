@@ -4,7 +4,12 @@ import { TripsLayer } from "@deck.gl/geo-layers";
 import "maplibre-gl/dist/maplibre-gl.css";
 import "./style.css";
 
-import { loadSiteData, type SiteData, type ZoneCollection } from "./data";
+import {
+  loadSiteData,
+  type SiteData,
+  type TripsFile,
+  type ZoneCollection,
+} from "./data";
 import { LOOP_MS, buildTripRecords, type TripRecord } from "./trips";
 import { buildDriftChart, renderDriftChartSvg } from "./driftchart";
 import { predictionOverlay } from "./prediction";
@@ -131,9 +136,39 @@ function renderDrift(drift: SiteData["drift"]): void {
   el.innerHTML = renderDriftChartSvg(model);
   const months = drift.months;
   const degraded = months.filter((m) => drift.degraded[m]);
+  const cut = Number.isFinite(drift.degraded_cut)
+    ? formatMinutes(drift.degraded_cut)
+    : "the cut";
   cap.textContent = degraded.length
-    ? `Degraded months (MAE > 10% above validation): ${degraded.join(", ")}`
-    : "No degraded months in this window.";
+    ? `Degraded months (MAE above ${cut}): ${degraded.join(", ")}`
+    : `No degraded months in this window (cut ${cut}).`;
+}
+
+function renderDays(trips: TripsFile): void {
+  const el = document.getElementById("days-body");
+  if (!el) return;
+  const animatedTag = Object.keys(trips.trips)[0];
+  const tags = Object.keys(trips.days);
+  if (tags.length === 0) {
+    el.textContent = "No demo days in this export.";
+    return;
+  }
+  el.innerHTML = tags
+    .map((tag) => {
+      const d = trips.days[tag];
+      const animated = tag === animatedTag ? " (animated)" : "";
+      const per = d.real_trips_per_taxi;
+      const perTxt =
+        per != null
+          ? `; 1 taxi = about ${Math.round(per).toLocaleString()} real trips`
+          : "";
+      return (
+        `<div>${d.date}${animated}: about ` +
+        `${d.est_real_trips.toLocaleString()} real trips, ` +
+        `${d.n_exported.toLocaleString()} shown${perTxt}</div>`
+      );
+    })
+    .join("");
 }
 
 function tripLayerProps(records: TripRecord[], currentTime: number) {
@@ -197,14 +232,34 @@ async function main(): Promise<void> {
     // Animated taxis via deck.gl TripsLayer; currentTime advances on a
     // LOOP_MS clock and the layer props are re-set each frame (deck.gl
     // diffs by layer id, so the data buffers are reused).
-    const tripsKey = Object.keys(data.trips)[0];
+    const dayTags = Object.keys(data.trips.trips);
+    const tripsKey = dayTags[0];
     const records: TripRecord[] = tripsKey
-      ? buildTripRecords(data.trips[tripsKey], data.routes)
+      ? buildTripRecords(data.trips.trips[tripsKey], data.routes)
       : [];
+
+    // Hover tooltip: actual vs predicted minutes for the picked trip.
+    const tip = document.createElement("div");
+    tip.id = "trip-tooltip";
+    tip.hidden = true;
+    mapEl.appendChild(tip);
 
     const overlay = new MapboxOverlay({
       interleaved: true,
       layers: [new TripsLayer(tripLayerProps(records, 0))],
+      onHover: (info) => {
+        const obj = info.object as TripRecord | undefined;
+        if (obj && typeof obj.minutes === "number") {
+          tip.textContent =
+            `${formatMinutes(obj.minutes)} actual / ` +
+            `${formatMinutes(obj.pred_minutes)} predicted`;
+          tip.style.left = `${info.x + 14}px`;
+          tip.style.top = `${info.y + 14}px`;
+          tip.hidden = false;
+        } else {
+          tip.hidden = true;
+        }
+      },
     });
     map.addControl(overlay as unknown as maplibregl.IControl);
 
@@ -222,6 +277,7 @@ async function main(): Promise<void> {
   });
 
   renderDrift(data.drift);
+  renderDays(data.trips);
 }
 
 void main();
