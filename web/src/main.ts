@@ -2,6 +2,8 @@ import * as maplibregl from "maplibre-gl";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { TripsLayer } from "@deck.gl/geo-layers";
 import "maplibre-gl/dist/maplibre-gl.css";
+// The ESM build loads its worker by URL; let Vite bundle and emit it.
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import "./style.css";
 
 import {
@@ -14,6 +16,8 @@ import { LOOP_MS, buildTripRecords, type TripRecord } from "./trips";
 import { buildDriftChart, renderDriftChartSvg } from "./driftchart";
 import { predictionOverlay } from "./prediction";
 import { formatClock, formatDayDate, formatMinutes } from "./format";
+
+maplibregl.setWorkerUrl(maplibreWorkerUrl);
 
 const DARK_STYLE: maplibregl.StyleSpecification = {
   version: 8,
@@ -206,7 +210,7 @@ function tripLayerProps(records: TripRecord[], currentTime: number) {
     getTimestamps: (d: TripRecord) => d.timestamps,
     getColor: [255, 209, 102] as [number, number, number],
     opacity: 0.95,
-    trailLength: 0.15,
+    trailLength: 1500,
     currentTime,
     pickable: true,
     widthMinPixels: 2,

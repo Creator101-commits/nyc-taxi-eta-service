@@ -72,7 +72,7 @@ export function tripToRecord(
 export function buildTripRecords(
   trips: TripRow[],
   routes: RoutesFile,
-  maxTrips = 400,
+  maxTrips = Number.POSITIVE_INFINITY,
 ): TripRecord[] {
   const out: TripRecord[] = [];
   for (const t of trips) {
