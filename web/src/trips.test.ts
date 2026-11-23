@@ -65,6 +65,27 @@ describe("tripToRecord", () => {
       MIN_TRIP_MS - 1e-6,
     );
   });
+
+  it("spaces timestamps by segment length for constant speed", () => {
+    // Uneven vertex spacing: 1, 1, 2 units -> time shares 1/4, 1/4, 1/2.
+    const uneven: RoutesFile = {
+      "1>2": [
+        [0, 0],
+        [0.001, 0],
+        [0.002, 0],
+        [0.004, 0],
+      ],
+    };
+    const rec = tripToRecord(
+      { pu: 1, do: 2, minute: 0, minutes: 40, pred_minutes: 40 },
+      uneven,
+    )!;
+    const d01 = rec.timestamps[1] - rec.timestamps[0];
+    const d12 = rec.timestamps[2] - rec.timestamps[1];
+    const d23 = rec.timestamps[3] - rec.timestamps[2];
+    expect(d01).toBeCloseTo(d12, 6);
+    expect(d23).toBeCloseTo(2 * d01, 6);
+  });
 });
 
 describe("buildTripRecords", () => {

@@ -44,11 +44,18 @@ export function tripToRecord(
   const rawDur = (trip.minutes / 1440) * LOOP_MS;
   const dur = Math.max(MIN_TRIP_MS, rawDur);
 
-  // Distribute timestamps evenly along the path vertices.
+  // Timestamps follow cumulative segment length so each taxi moves at
+  // constant speed even after route simplification thins the vertices.
   const n = path.length;
-  const timestamps = Array.from(
-    { length: n },
-    (_, i) => start + (dur * i) / (n - 1),
+  const cum: number[] = [0];
+  for (let i = 1; i < n; i++) {
+    const dx = path[i][0] - path[i - 1][0];
+    const dy = path[i][1] - path[i - 1][1];
+    cum.push(cum[i - 1] + Math.hypot(dx, dy));
+  }
+  const total = cum[n - 1];
+  const timestamps = Array.from({ length: n }, (_, i) =>
+    total > 0 ? start + (dur * cum[i]) / total : start + (dur * i) / (n - 1),
   );
 
   return {
