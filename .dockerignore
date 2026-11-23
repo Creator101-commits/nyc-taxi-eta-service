@@ -6,10 +6,15 @@
 **/.mypy_cache
 **/.ruff_cache
 artifacts
-results
 web/node_modules
 dist
 *.parquet
 *.graphml
 *.npz
 .kaggle
+
+# The served model bundle is the one curated output the image needs.
+!results/
+results/*
+!results/model_bundle/
+!results/model_bundle/**
