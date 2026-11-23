@@ -208,6 +208,9 @@ function tripLayerProps(records: TripRecord[], currentTime: number) {
     data: records,
     getPath: (d: TripRecord) => d.path,
     getTimestamps: (d: TripRecord) => d.timestamps,
+    // Route coords are [lon, lat] pairs; the default "XYZ" format reads
+    // three floats per position and corrupts every path.
+    positionFormat: "XY" as const,
     getColor: [255, 209, 102] as [number, number, number],
     opacity: 0.95,
     trailLength: 1500,
@@ -278,8 +281,12 @@ async function main(): Promise<void> {
     tip.hidden = true;
     mapEl.appendChild(tip);
 
+    // Overlaid mode: deck.gl 9.4's interleaved path reads map.transform,
+    // which maplibre-gl v6 removed, so the custom layer threw every frame
+    // and nothing rendered. The overlaid canvas owns its own animation
+    // loop and needs only public map APIs.
     const overlay = new MapboxOverlay({
-      interleaved: true,
+      interleaved: false,
       layers: [new TripsLayer(tripLayerProps(records, 0))],
       onHover: (info) => {
         const obj = info.object as TripRecord | undefined;
