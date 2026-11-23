@@ -142,21 +142,38 @@ def run_experiment(
     log.mark("zones", t0)
 
     # --- OSM graph: reuse the pinned private dataset when mounted -------
+    # The GraphML is only parsed lazily (routes / fallback distances); the
+    # dataset's provenance.json supplies the recorded hashes and counts.
     t0 = time.time()
     graph_dataset = _find_kaggle_input(config.OSM_GRAPH_DATASET_ID)
     dist_table_path = work_dir / "distances.npz"
+    graphml_path: Path | None = None
     graph_record: dict[str, Any] = {}
     if graph_dataset is not None:
-        # The graph dataset also carries distances.npz (computed once at
-        # dataset build time) so kernels skip 263 Dijkstra runs.
+        prov_path = graph_dataset / "provenance.json"
+        prov: dict[str, Any] = (
+            json.loads(prov_path.read_text()) if prov_path.exists() else {}
+        )
+        graphml_path = graph_dataset / "nyc_drive_graph.graphml"
         ds_dist = graph_dataset / "distances.npz"
         if ds_dist.exists():
             import shutil
 
             shutil.copyfile(ds_dist, dist_table_path)
-    if graph_dataset is None:
+        graph_record = {
+            "source": "kaggle_dataset",
+            "dataset_id": config.OSM_GRAPH_DATASET_ID,
+            "sha256": prov.get("graphml_sha256")
+            or (_sha256_file(graphml_path) if graphml_path.exists() else ""),
+            "osm_base": prov.get("osm_base")
+            or _read_text(graph_dataset / "osm_base.txt"),
+            "n_nodes": prov.get("n_nodes"),
+            "n_edges": prov.get("n_edges"),
+            "distances_sha256": prov.get("distances_sha256", ""),
+        }
+    else:
         # Local/dev fallback: build the graph once (kernel path uses dataset).
-        graph, grec = download_drive_graph(work_dir)
+        _graph, grec = download_drive_graph(work_dir)
         graphml_path = Path(grec.graphml_path)
         graph_record = {
             "source": "downloaded",
@@ -165,27 +182,18 @@ def run_experiment(
             "n_nodes": grec.n_nodes,
             "n_edges": grec.n_edges,
         }
-    else:
-        graphml_path = graph_dataset / "nyc_drive_graph.graphml"
-        graph = load_graph(graphml_path)
-        graph_record = {
-            "source": "kaggle_dataset",
-            "dataset_id": config.OSM_GRAPH_DATASET_ID,
-            "sha256": _sha256_file(graphml_path),
-            "osm_base": _read_text(graph_dataset / "osm_base.txt"),
-            "n_nodes": graph.number_of_nodes(),
-            "n_edges": graph.number_of_edges(),
-        }
     log.mark("osm_graph", t0)
 
     # --- distances between zone centroids -------------------------------
     t0 = time.time()
-    graph_nodes: dict[int, int] = {}
     if dist_table_path.exists():
         zone_ids, matrix = load_distance_table(dist_table_path)
     else:
-        graph_nodes = zone_nodes(graph, zone_infos)
-        dists = all_pairs_road_km(graph, graph_nodes)
+        if graphml_path is None or not graphml_path.exists():
+            raise FileNotFoundError("no graphml available for distances")
+        graph = load_graph(graphml_path)
+        nodes = zone_nodes(graph, zone_infos)
+        dists = all_pairs_road_km(graph, nodes)
         zone_ids = sorted(zone_infos)
         save_distance_table(dists, zone_ids, dist_table_path)
         zone_ids, matrix = load_distance_table(dist_table_path)
@@ -447,11 +455,9 @@ def run_experiment(
     # --- web data export (always, incl. smoke) -----------------------------
     t0 = time.time()
     _LAST_MODEL.append(best)
-    if not graph_nodes:
-        graph_nodes = zone_nodes(graph, zone_infos)
     _export_web_data(
         out_dir, zones_geojson, feats, deploy_signals,
-        monthly_records, deploy_months, graph, graph_nodes,
+        monthly_records, deploy_months, graphml_path, zone_infos,
     )
     log.mark("web_export", time.time() - t0)
 
@@ -650,8 +656,8 @@ def _export_web_data(
     deploy_signals: dict[str, drift.DriftSignals],
     monthly_records: dict[str, dict[str, Any]],
     deploy_months: list[str],
-    graph: Any,
-    nodes: dict[int, int],
+    graphml_path: Path | None,
+    zone_infos: dict[int, ZoneInfo],
 ) -> None:
     """Write the static data files the website loads."""
     web = out_dir / "web"
@@ -704,9 +710,12 @@ def _export_web_data(
         trips_out[tag] = rows[:500]
     (web / "trips.json").write_text(json.dumps(trips_out))
 
-    # Route geometries for the demo pairs.
-    routes = {}
-    if graph is not None and nodes:
+    # Route geometries for the demo pairs; the GraphML is parsed only
+    # when there is at least one pair to route (smoke has none).
+    routes: dict[str, Any] = {}
+    if pairs and graphml_path is not None and graphml_path.exists():
+        graph = load_graph(graphml_path)
+        nodes = zone_nodes(graph, zone_infos)
         routes = route_geometries(graph, nodes, pairs)
     (web / "routes.json").write_text(json.dumps(routes))
 
