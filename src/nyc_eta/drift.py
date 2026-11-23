@@ -46,23 +46,20 @@ def drift_share(
 ) -> float:
     """Evidently DataDriftPreset drifted-feature share (lazy import).
 
-    Result layout: metrics[i].result.drift_by_columns[feature]
-    .drift_detected (bool). Share = drifted / analyzed features.
+    evidently 0.7.x API: Report([preset]).run(current, reference) returns
+    a Snapshot; the DriftedColumnsCount metric carries count + share.
     """
-    from evidently.metric_preset import DataDriftPreset  # noqa: PLC0415
-    from evidently.report import Report  # noqa: PLC0415 - kernel-only dep
+    from evidently import Report  # noqa: PLC0415 - kernel-only dep
+    from evidently.presets import DataDriftPreset  # noqa: PLC0415
 
     feats = config.FEATURE_COLUMNS
-    report = Report(metrics=[DataDriftPreset()])
-    report.run(reference_data=ref_df[feats], current_data=cur_df[feats])
-    result = report.as_dict()
-    for metric in result.get("metrics", []):
-        cols = metric.get("result", {}).get("drift_by_columns")
-        if isinstance(cols, dict) and cols:
-            drifted = sum(
-                1 for c in cols.values() if c.get("drift_detected")
-            )
-            return drifted / len(cols)
+    report = Report([DataDriftPreset()])
+    snapshot = report.run(cur_df[feats], ref_df[feats])
+    for metric in snapshot.dict().get("metrics", []):
+        if metric.get("config", {}).get("type") == (
+            "evidently:metric_v2:DriftedColumnsCount"
+        ):
+            return float(metric["value"]["share"])
     return float("nan")
 
 
