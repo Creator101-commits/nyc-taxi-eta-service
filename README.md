@@ -3,11 +3,12 @@
 Do label-free drift alarms on a deployed trip-time model predict the
 months when its error rises, and does drift-triggered retraining beat a
 static model and a fixed monthly schedule? This project answers that on
-30 months of NYC yellow-taxi data (2019-07 to 2021-12, including the
-COVID shock) with a LightGBM ETA model, a retraining-policy simulation,
-a FastAPI service and a dark single-page map website.
+36 months of NYC yellow-taxi data (2019-01 to 2021-12, including the
+COVID shock), simulating deployment over the final 30 months
+(2019-07 onward), with a LightGBM ETA model, a retraining-policy
+simulation, a FastAPI service and a dark single-page map website.
 
-![NYC taxi ETA v1.1 results](image.png)
+![NYC taxi ETA results: monthly MAE by retraining policy through the COVID collapse, paired policy bootstrap differences, drift-signal lead/lag correlations and interval coverage](image.png)
 
 The figure follows the deployment simulation: (a) monthly MAE by
 retraining policy through the COVID collapse, (b) paired policy
