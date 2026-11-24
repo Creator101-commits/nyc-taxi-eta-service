@@ -124,7 +124,7 @@ late-2021 traffic patterns.
 - `kaggle/`, `kaggle_smoke/`, `kaggle_graph/` - kernel entrypoints and
   metadata.
 - `scripts/` - `kaggle_run.sh`, `build_graph_dataset.sh`,
-  `make_fixture_bundle.py`, `render_figure.py` + `figure-data.json`.
+  `make_fixture_bundle.py`, `render_figure.py`.
 - `web/` - Vite + TypeScript site; `web/public/data/` holds the v1.1
   export copied unedited from kernel output.
 - `results/` - unedited kernel output plus `v1_as_run/` (the earlier
@@ -268,6 +268,38 @@ MAE, alarm scores, all 38 file sha256s, clean counts, every monthly
 MAE, served-model `n_train` and conformal q). v1's bootstrap covered
 the static model only.
 
+### What the figure shows
+
+- (a) Monthly MAE by retraining policy: all three policies track each
+  other before COVID (about 3.0-4.0 minutes); the 2020-04 collapse
+  pushes the static model to 5.31 while monthly retraining absorbs it
+  (4.73, then back to about 3.0-3.2). The zone-pair baseline sits
+  above every model except in the COVID months, where it beats the
+  static model outright. The degraded threshold (1.1x validation MAE,
+  4.03) is crossed only by the static policy during the shock, and the
+  drift policy's 22 retrains (tick marks) cluster exactly in the bad
+  months.
+- (b) Paired policy bootstrap (1,000 day-cluster replicates): monthly
+  beats static by 0.440 minutes [-0.456, -0.423] and drift beats static
+  by 0.406 [-0.422, -0.390]; drift trails monthly by only 0.033
+  [+0.028, +0.039]. All three confidence intervals exclude zero.
+- (c) Drift-signal lead/lag: drift share correlates most strongly with
+  the static MAE ratio (Spearman 0.38-0.46 across lags -1, 0, +1),
+  prediction Wasserstein distance is weaker (0.17-0.24), and volume
+  ratio is negative (-0.31 to -0.40). The correlations are
+  contemporaneous: no signal leads the error by a month.
+- (d) 80% interval coverage (static model): about 0.77-0.83 before
+  COVID, then a collapse to 0.52 in 2020-04 and a slow recovery that
+  does not reach the 0.80 target again until 2021-06; the 0.75 floor
+  is breached in eight months: 2020-04 through 2020-09 and again in
+  2021-01 and 2021-02.
+
+The figure ties the narrative together: retraining (monthly or
+drift-triggered) is what keeps MAE low through the COVID shock, the
+drift signals do detect the bad months but cannot predict them, and
+the static model's conformal intervals silently undercover exactly
+when they are needed most.
+
 ## Findings
 
 - **Retraining matters a lot:** the monthly policy cuts mean MAE by
@@ -345,8 +377,8 @@ committed bundle).
 
 ## Reproducing the figure
 
-`image.png` renders only from `results/` via `scripts/figure-data.json`
-(curated series) and `scripts/render_figure.py`:
+`image.png` renders only from `results/` (the unedited
+`results/manifest.json`) via `scripts/render_figure.py`:
 
 ```bash
 uv run --with matplotlib python scripts/render_figure.py
