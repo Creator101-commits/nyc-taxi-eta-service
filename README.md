@@ -4,6 +4,9 @@
 
 [![ci](https://github.com/Creator101-commits/nyc-taxi-eta-service/actions/workflows/ci.yml/badge.svg)](https://github.com/Creator101-commits/nyc-taxi-eta-service/actions/workflows/ci.yml)
 
+**Live site:** https://creator101-commits.github.io/nyc-taxi-eta-service/ (static: taxi replay and
+drift chart; the trip-time predictor needs the API from the Docker image).
+
 A reproducible study of NYC yellow-taxi trip times: a LightGBM ETA model,
 label-free drift alarms, retraining-policy simulation with a paired
 bootstrap, a FastAPI service and a dark single-page map website.
@@ -336,8 +339,9 @@ committed bundle).
   not the compute or data cost of 22-30 retrains.
 - **`osm_base` is empty:** every Overpass status endpoint failed during
   the graph build; the GraphML itself is complete and hashed.
-- **No live hosting yet:** the Dockerfile is delivery-ready; the
-  deployment target is undecided.
+- **Static hosting only:** the live site on GitHub Pages replays the
+  trips and shows the drift chart, but the trip-time predictor needs
+  the API, which runs from the Docker image or `nyc-eta serve`.
 
 ## Reproducing the figure
 
