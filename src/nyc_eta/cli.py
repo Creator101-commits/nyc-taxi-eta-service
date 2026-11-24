@@ -29,8 +29,10 @@ def run(
 
 @app.command()
 def serve(
-    bundle: Path = typer.Option(Path("results/model_bundle")),
-    web_dist: Path = typer.Option(Path("web/dist")),
+    bundle: Path = typer.Option(
+        Path("results/model_bundle"), envvar="NYC_ETA_BUNDLE"
+    ),
+    web_dist: Path = typer.Option(Path("web/dist"), envvar="NYC_ETA_WEB"),
     host: str = "0.0.0.0",
     port: int = 8000,
 ) -> None:
