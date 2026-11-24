@@ -96,7 +96,7 @@ jobs:
       - name: Smoke test API and site
         run: |
           docker run -d --name nyc -p 8000:8000 nyc-eta-service
-          trap 'docker logs nyc' EXIT
+          trap 'docker logs nyc 2>&1 | tail -n 60 || true; docker rm -f nyc > /dev/null 2>&1 || true' EXIT
           for i in $(seq 1 30); do
             if curl -sf http://localhost:8000/health > /dev/null; then break; fi
             sleep 2
@@ -110,4 +110,3 @@ jobs:
             -H 'Content-Type: application/json' \
             -d '{"pickup_zone_id": 1, "dropoff_zone_id": 2, "pickup_datetime": "2019-07-04T08:30:00"}' \
             | grep -q '"minutes"'
-          docker rm -f nyc
