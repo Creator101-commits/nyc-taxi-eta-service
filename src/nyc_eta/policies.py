@@ -81,7 +81,6 @@ def simulate_policies(
         y = data.minutes
         feats = data.features
 
-        # static
         p_static = predict_fn(static_model, feats)
         ae_static = np.abs(y - p_static)
         results["static"].monthly_ae[t] = ae_static
