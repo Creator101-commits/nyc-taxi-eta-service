@@ -163,7 +163,8 @@ export function renderDriftChartSvg(model: ChartModel): string {
   const monthTicks = tickIdx
     .map(
       (i) =>
-        `<text x="${x(i).toFixed(1)}" y="${h - 7}" text-anchor="middle" font-size="8" fill="#8b96ad">${formatMonthShort(months[i])}</text>`,
+        // Edge labels anchor inward so they are not clipped by the viewBox.
+        `<text x="${x(i).toFixed(1)}" y="${h - 7}" text-anchor="${i === 0 ? "start" : i === n - 1 ? "end" : "middle"}" font-size="8" fill="#8b96ad">${formatMonthShort(months[i])}</text>`,
     )
     .join("");
 
