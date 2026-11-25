@@ -1,6 +1,6 @@
 # NYC Taxi Trip-Time Service
 
-> Predicting NYC taxi trip times across 36 months including COVID: retraining when drift alarms fire cut the error by 0.41 minutes per trip.
+> Taxi ETA with drift monitoring
 
 Do label-free drift alarms on a deployed trip-time model predict the
 months when its error rises, and does drift-triggered retraining beat a
@@ -38,7 +38,9 @@ bootstrap 95% CI (1,000 replicates, seed 0):
   23 of 30 months: recall 1.0 on the four degraded months but precision
   0.17 (19 false alarms), and stayed on for 20 straight months after
   the error recovered. Lead/lag Spearman correlations are
-  contemporaneous: no signal leads the error by a month.
+  contemporaneous: no signal leads the error by a month. The
+  pre-registered trip-volume alarm fires only on increases, so it never
+  fired during the COVID collapse (volume ratio about 0.03).
 - **In the COVID collapse a simple zone-pair median beat the static
   model** in four months (2020-04 to 2020-06, 2021-01), and static 80%
   interval coverage fell to 0.52 before recovering.
@@ -90,6 +92,10 @@ scripts/kaggle_run.sh           # full 36-month protocol
 Live site (static taxi replay and drift chart):
 https://creator101-commits.github.io/nyc-taxi-eta-service/
 
+The animated routes are illustrative: TLC data has zones and timestamps,
+not GPS traces. The live predictor needs the API, which static GitHub
+Pages hosting does not run.
+
 The served model is trained on 2021-10..2021-12, so predictions reflect
 late-2021 traffic patterns. With `nyc-eta serve` running:
 
@@ -99,19 +105,3 @@ curl -s -X POST localhost:8000/predict -H 'content-type: application/json' -d '{
   "pickup_zone_id": 132, "dropoff_zone_id": 138,
   "pickup_datetime": "2021-12-15T08:30:00"}'
 ```
-
-## Notes
-
-- The animated taxi routes are illustrative: TLC data has zones and
-  timestamps, not GPS traces. The live predictor needs the API, which
-  static GitHub Pages hosting does not run.
-- The pre-registered trip-volume alarm fires only on increases, so it
-  never fired during the COVID collapse (volume ratio about 0.03); a
-  post-hoc two-sided rule is reported separately.
-- The study window 2019-01..2021-12 was chosen with hindsight to
-  include COVID, and alarm thresholds are the max over only two
-  validation months.
-- Data: NYC TLC yellow-taxi monthly Parquet plus taxi zone files;
-  protocol `nyc-taxi-eta-v1`, bootstrap 1,000 replicates seed 0.
-  Primary run v1.1 (`e18c996`); `results/` is unedited kernel output
-  and `image.png` renders from it.
